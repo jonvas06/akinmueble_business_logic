@@ -1,15 +1,16 @@
 import {inject, lifeCycleObserver, LifeCycleObserver} from '@loopback/core';
 import {juggler} from '@loopback/repository';
+import {SecurityConfiguration} from "../config/security.config";
 
 const config = {
   name: 'mysql',
   connector: 'mysql',
   url: '',
-  host: 'inmobiliaria.c7og1ztb2elo.us-east-2.rds.amazonaws.com',
+  host:SecurityConfiguration.hostDb,
   port: 3306,
-  user: 'admin',
-  password: 'N8Lqyqh3NNA1Homj',
-  database: 'akinmuebleDB'
+  user: SecurityConfiguration.userDb,
+  password: SecurityConfiguration.passwordDb,
+  database: SecurityConfiguration.dataBase
 };
 
 // Observe application's life cycle to disconnect the datasource when
@@ -26,6 +27,8 @@ export class MysqlDataSource extends juggler.DataSource
     @inject('datasources.config.mysql', {optional: true})
     dsConfig: object = config,
   ) {
+
+
     super(dsConfig);
   }
 }
