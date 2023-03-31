@@ -34,12 +34,18 @@ export class Customer extends Entity {
   @property({
     type: 'string',
     required: true,
+    index: {
+      unique: true
+    }
   })
   documentNumber: string;
 
   @property({
     type: 'string',
     required: true,
+    index: {
+      unique: true
+    }
   })
   email: string;
 

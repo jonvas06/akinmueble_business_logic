@@ -12,6 +12,9 @@ export class Department extends Entity {
   @property({
     type: 'string',
     required: true,
+    index: {
+      unique: true
+    }
   })
   departmentName: string;
 

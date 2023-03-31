@@ -12,6 +12,9 @@ export class AdvisorStatus extends Entity {
   @property({
     type: 'string',
     required: true,
+    index: {
+      unique: true
+    }
   })
   nameStatus: string;
 

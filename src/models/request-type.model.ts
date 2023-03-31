@@ -12,6 +12,9 @@ export class RequestType extends Entity {
   @property({
     type: 'string',
     required: true,
+    index: {
+      unique: true
+    }
   })
   requestTypeName: string;
 

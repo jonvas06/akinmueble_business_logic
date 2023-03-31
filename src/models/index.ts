@@ -14,3 +14,4 @@ export * from './property-type.model';
 export * from './customer.model';
 export * from './report.model';
 export * from './global.model';
+export * from './prueba-fecha.model';

@@ -12,6 +12,9 @@ export class Request extends Entity {
   @property({
     type: 'string',
     required: true,
+    index: {
+      unique: true
+    }
   })
   code: string;
 
@@ -35,7 +38,7 @@ export class Request extends Entity {
     type: 'string',
     required: true,
   })
-  requestType: string;
+  requestTypeId: string;
 
   @property({
     type: 'string',

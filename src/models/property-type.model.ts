@@ -12,12 +12,15 @@ export class PropertyType extends Entity {
   @property({
     type: 'string',
     required: true,
+    index: {
+      unique: true
+    }
   })
   typeName: string;
 
   @property({
     type: 'string',
-    required: true,
+    required: false,
   })
   description: string;
 
@@ -31,7 +34,7 @@ export class PropertyType extends Entity {
     type: 'number',
     required: true,
   })
-  retalPercentage: number;
+  rentalPercentage: number;
 
 
   constructor(data?: Partial<PropertyType>) {

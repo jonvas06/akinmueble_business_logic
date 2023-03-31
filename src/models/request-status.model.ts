@@ -12,6 +12,9 @@ export class RequestStatus extends Entity {
   @property({
     type: 'string',
     required: true,
+    index: {
+      unique: true
+    }
   })
   statusName: string;
 

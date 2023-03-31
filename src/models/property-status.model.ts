@@ -12,6 +12,9 @@ export class PropertyStatus extends Entity {
   @property({
     type: 'string',
     required: true,
+    index: {
+      unique: true
+    }
   })
   nameStatus: string;
 

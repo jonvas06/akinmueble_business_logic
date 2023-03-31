@@ -24,11 +24,11 @@ export class Property extends Entity {
   @property({
     type: 'date',
   })
-  dataoccupied?: string;
+  dataOccupied?: string;
 
   @property({
     type: 'string',
-    required: true,
+    required: false,
   })
   videoSource: string;
 
