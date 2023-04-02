@@ -1,4 +1,5 @@
-import {Entity, model, property} from '@loopback/repository';
+import {Entity, model, property, hasMany} from '@loopback/repository';
+import {Property} from './property.model';
 
 @model()
 export class PropertyManager extends Entity {
@@ -66,6 +67,9 @@ export class PropertyManager extends Entity {
     required: true,
   })
   dateOfBirth: string;
+
+  @hasMany(() => Property)
+  properties: Property[];
 
   constructor(data?: Partial<PropertyManager>) {
     super(data);

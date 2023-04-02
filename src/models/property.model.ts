@@ -1,4 +1,12 @@
-import {Entity, model, property} from '@loopback/repository';
+import {Entity, model, property, belongsTo, hasMany} from '@loopback/repository';
+import {Advisor} from './advisor.model';
+import {PropertyStatus} from './property-status.model';
+import {City} from './city.model';
+import {OfferType} from './offer-type.model';
+import {PropertyManager} from './property-manager.model';
+import {PropertyType} from './property-type.model';
+import {PropertyPicture} from './property-picture.model';
+import {Request} from './request.model';
 
 @model()
 export class Property extends Entity {
@@ -31,13 +39,6 @@ export class Property extends Entity {
     required: false,
   })
   videoSource: string;
-
-  @property({
-    type: 'string',
-    required: true,
-  })
-  advisorId: string;
-
   @property({
     type: 'string',
     required: true,
@@ -55,19 +56,35 @@ export class Property extends Entity {
     required: true,
   })
   offerId: string;
-
-  @property({
-    type: 'string',
-    required: true,
-  })
-  propertyTypeId: string;
-
   @property({
     type: 'string',
     required: true,
   })
   porpertyManagerId: string;
 
+  @belongsTo(() => Advisor)
+  advisorId: number;
+
+  @belongsTo(() => PropertyStatus)
+  propertyStatusId: number;
+
+  @belongsTo(() => City)
+  cityId: number;
+
+  @belongsTo(() => OfferType)
+  offerTypeId: number;
+
+  @belongsTo(() => PropertyManager)
+  propertyManagerId: number;
+
+  @belongsTo(() => PropertyType)
+  propertyTypeId: number;
+
+  @hasMany(() => PropertyPicture)
+  propertyPictures: PropertyPicture[];
+
+  @hasMany(() => Request)
+  requests: Request[];
 
   constructor(data?: Partial<Property>) {
     super(data);

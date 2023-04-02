@@ -1,4 +1,7 @@
-import {Entity, model, property} from '@loopback/repository';
+import {Entity, model, property, hasMany, belongsTo} from '@loopback/repository';
+import {Property} from './property.model';
+import {AdvisorStatus} from './advisor-status.model';
+import {Request} from './request.model';
 
 @model()
 export class Advisor extends Entity {
@@ -8,13 +11,6 @@ export class Advisor extends Entity {
     generated: true,
   })
   id?: number;
-
-  @property({
-    type: 'string',
-    required: true,
-  })
-  advisorStatusId: string;
-
   @property({
     type: 'string',
     required: true,
@@ -72,6 +68,15 @@ export class Advisor extends Entity {
     required: true,
   })
   dateOfBirth: string;
+
+  @hasMany(() => Property)
+  properties: Property[];
+
+  @belongsTo(() => AdvisorStatus)
+  advisorStatusId: number;
+
+  @hasMany(() => Request)
+  requests: Request[];
 
   constructor(data?: Partial<Advisor>) {
     super(data);

@@ -1,4 +1,10 @@
-import {Entity, model, property} from '@loopback/repository';
+import {Entity, model, property, belongsTo, hasMany} from '@loopback/repository';
+import {Property} from './property.model';
+import {Report} from './report.model';
+import {Advisor} from './advisor.model';
+import {RequestType} from './request-type.model';
+import {RequestStatus} from './request-status.model';
+import {Customer} from './customer.model';
 
 @model()
 export class Request extends Entity {
@@ -33,36 +39,23 @@ export class Request extends Entity {
     type: 'string',
   })
   contractSource?: string;
+  @belongsTo(() => Property)
+  propertyId: number;
 
-  @property({
-    type: 'string',
-    required: true,
-  })
-  requestTypeId: string;
+  @hasMany(() => Report)
+  reports: Report[];
 
-  @property({
-    type: 'string',
-    required: true,
-  })
-  customerId: string;
+  @belongsTo(() => Advisor)
+  advisorId: number;
 
-  @property({
-    type: 'string',
-    required: true,
-  })
-  requestStatusId: string;
+  @belongsTo(() => RequestType)
+  requestTypeId: number;
 
-  @property({
-    type: 'string',
-    required: true,
-  })
-  advisorId: string;
+  @belongsTo(() => RequestStatus)
+  requestStatusId: number;
 
-  @property({
-    type: 'string',
-    required: true,
-  })
-  propertyId: string;
+  @belongsTo(() => Customer)
+  customerId: number;
 
   constructor(data?: Partial<Request>) {
     super(data);
