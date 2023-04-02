@@ -3,21 +3,20 @@ import {Entity, model, property} from '@loopback/repository';
 @model()
 export class RequestStatus extends Entity {
   @property({
-    type: 'string',
+    type: 'number',
     id: true,
     generated: true,
   })
-  id?: string;
+  id?: number;
 
   @property({
     type: 'string',
     required: true,
     index: {
-      unique: true
-    }
+      unique: true,
+    },
   })
   statusName: string;
-
 
   constructor(data?: Partial<RequestStatus>) {
     super(data);

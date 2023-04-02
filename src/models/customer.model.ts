@@ -3,17 +3,17 @@ import {Entity, model, property} from '@loopback/repository';
 @model()
 export class Customer extends Entity {
   @property({
+    type: 'number',
+    id: true,
+    generated: true,
+  })
+  id?: number;
+
+  @property({
     type: 'string',
     required: true,
   })
   firstName: string;
-
-  @property({
-    type: 'string',
-    id: true,
-    generated: true,
-  })
-  id?: string;
 
   @property({
     type: 'string',
@@ -35,8 +35,8 @@ export class Customer extends Entity {
     type: 'string',
     required: true,
     index: {
-      unique: true
-    }
+      unique: true,
+    },
   })
   documentNumber: string;
 
@@ -44,8 +44,8 @@ export class Customer extends Entity {
     type: 'string',
     required: true,
     index: {
-      unique: true
-    }
+      unique: true,
+    },
   })
   email: string;
 
@@ -60,7 +60,6 @@ export class Customer extends Entity {
     required: true,
   })
   address: string;
-
 
   constructor(data?: Partial<Customer>) {
     super(data);

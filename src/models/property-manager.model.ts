@@ -3,11 +3,11 @@ import {Entity, model, property} from '@loopback/repository';
 @model()
 export class PropertyManager extends Entity {
   @property({
-    type: 'string',
+    type: 'number',
     id: true,
     generated: true,
   })
-  id?: string;
+  id?: number;
 
   @property({
     type: 'string',
@@ -35,8 +35,8 @@ export class PropertyManager extends Entity {
     type: 'string',
     required: true,
     index: {
-      unique: true
-    }
+      unique: true,
+    },
   })
   documentNumber: string;
 
@@ -44,8 +44,8 @@ export class PropertyManager extends Entity {
     type: 'string',
     required: true,
     index: {
-      unique: true
-    }
+      unique: true,
+    },
   })
   email: string;
 
@@ -67,7 +67,6 @@ export class PropertyManager extends Entity {
   })
   dateOfBirth: string;
 
-
   constructor(data?: Partial<PropertyManager>) {
     super(data);
   }
@@ -77,4 +76,5 @@ export interface PropertyManagerRelations {
   // describe navigational properties here
 }
 
-export type PropertyManagerWithRelations = PropertyManager & PropertyManagerRelations;
+export type PropertyManagerWithRelations = PropertyManager &
+  PropertyManagerRelations;
