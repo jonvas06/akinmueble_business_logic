@@ -1,9 +1,26 @@
-import {Entity, model, property, hasMany, belongsTo} from '@loopback/repository';
-import {Property} from './property.model';
+import {
+  Entity,
+  belongsTo,
+  hasMany,
+  model,
+  property,
+} from '@loopback/repository';
 import {AdvisorStatus} from './advisor-status.model';
+import {Property} from './property.model';
 import {Request} from './request.model';
 
-@model()
+@model({
+  settings: {
+    foreignKeys: {
+      fk_advisor_advisorStatusId: {
+        name: 'fk_advisor_advisorStatusId',
+        entity: 'AdvisorStatus',
+        entityKey: 'id',
+        foreignKey: 'advisorStatusId',
+      },
+    },
+  },
+})
 export class Advisor extends Entity {
   @property({
     type: 'number',
@@ -11,6 +28,7 @@ export class Advisor extends Entity {
     generated: true,
   })
   id?: number;
+
   @property({
     type: 'string',
     required: true,
@@ -69,11 +87,11 @@ export class Advisor extends Entity {
   })
   dateOfBirth: string;
 
-  @hasMany(() => Property)
-  properties: Property[];
-
   @belongsTo(() => AdvisorStatus)
   advisorStatusId: number;
+
+  @hasMany(() => Property)
+  properties: Property[];
 
   @hasMany(() => Request)
   requests: Request[];

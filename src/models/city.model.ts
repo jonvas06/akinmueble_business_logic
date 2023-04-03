@@ -1,8 +1,25 @@
-import {Entity, model, property, hasMany, belongsTo} from '@loopback/repository';
-import {Property} from './property.model';
+import {
+  Entity,
+  belongsTo,
+  hasMany,
+  model,
+  property,
+} from '@loopback/repository';
 import {Department} from './department.model';
+import {Property} from './property.model';
 
-@model()
+@model({
+  settings: {
+    foreignKeys: {
+      fk_city_departmentId: {
+        name: 'fk_city_departmentId',
+        entity: 'Department',
+        entityKey: 'id',
+        foreignKey: 'departmentId',
+      },
+    },
+  },
+})
 export class City extends Entity {
   @property({
     type: 'number',
@@ -16,11 +33,12 @@ export class City extends Entity {
     required: true,
   })
   cityName: string;
-  @hasMany(() => Property)
-  properties: Property[];
 
   @belongsTo(() => Department)
   departmentId: number;
+
+  @hasMany(() => Property)
+  properties: Property[];
 
   constructor(data?: Partial<City>) {
     super(data);
