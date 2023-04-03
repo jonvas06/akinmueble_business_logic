@@ -51,7 +51,7 @@ import {Request} from './request.model';
         name: 'fk_property_propertyTypeId',
         entity: 'PropertyType',
         entityKey: 'id',
-        foreignKey: 'propertyManagerId',
+        foreignKey: 'propertyTypeId',
       },
     },
   },
