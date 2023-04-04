@@ -1,23 +1,26 @@
-import {Entity, model, property} from '@loopback/repository';
+import {Entity, model, property, hasMany} from '@loopback/repository';
+import {Property} from './property.model';
 
 @model()
 export class PropertyStatus extends Entity {
   @property({
-    type: 'string',
+    type: 'number',
     id: true,
     generated: true,
   })
-  id?: string;
+  id?: number;
 
   @property({
     type: 'string',
     required: true,
     index: {
-      unique: true
-    }
+      unique: true,
+    },
   })
   nameStatus: string;
 
+  @hasMany(() => Property)
+  properties: Property[];
 
   constructor(data?: Partial<PropertyStatus>) {
     super(data);
@@ -28,4 +31,5 @@ export interface PropertyStatusRelations {
   // describe navigational properties here
 }
 
-export type PropertyStatusWithRelations = PropertyStatus & PropertyStatusRelations;
+export type PropertyStatusWithRelations = PropertyStatus &
+  PropertyStatusRelations;

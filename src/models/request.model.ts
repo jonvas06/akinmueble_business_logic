@@ -1,20 +1,67 @@
-import {Entity, model, property} from '@loopback/repository';
+import {
+  Entity,
+  belongsTo,
+  hasMany,
+  model,
+  property,
+} from '@loopback/repository';
+import {Advisor} from './advisor.model';
+import {Customer} from './customer.model';
+import {Property} from './property.model';
+import {Report} from './report.model';
+import {RequestStatus} from './request-status.model';
+import {RequestType} from './request-type.model';
 
-@model()
+@model({
+  settings: {
+    foreignKeys: {
+      fk_request_propertyId: {
+        name: 'fk_request_propertyId',
+        entity: 'Property',
+        entityKey: 'id',
+        foreignKey: 'propertyId',
+      },
+      fk_request_advisorId: {
+        name: 'fk_request_advisorId',
+        entity: 'Advisor',
+        entityKey: 'id',
+        foreignKey: 'advisorId',
+      },
+      fk_request_requestTypeId: {
+        name: 'fk_request_requestTypeId',
+        entity: 'RequestType',
+        entityKey: 'id',
+        foreignKey: 'requestTypeId',
+      },
+      fk_request_requestStatusId: {
+        name: 'fk_request_requestStatusId',
+        entity: 'RequestStatus',
+        entityKey: 'id',
+        foreignKey: 'requestStatusId',
+      },
+      fk_request_customerId: {
+        name: 'fk_request_customerId',
+        entity: 'Customer',
+        entityKey: 'id',
+        foreignKey: 'customerId',
+      },
+    },
+  },
+})
 export class Request extends Entity {
   @property({
-    type: 'string',
+    type: 'number',
     id: true,
     generated: true,
   })
-  id?: string;
+  id?: number;
 
   @property({
     type: 'string',
     required: true,
     index: {
-      unique: true
-    }
+      unique: true,
+    },
   })
   code: string;
 
@@ -34,36 +81,23 @@ export class Request extends Entity {
   })
   contractSource?: string;
 
-  @property({
-    type: 'string',
-    required: true,
-  })
-  requestTypeId: string;
+  @belongsTo(() => Property)
+  propertyId: number;
 
-  @property({
-    type: 'string',
-    required: true,
-  })
-  customerId: string;
+  @belongsTo(() => Advisor)
+  advisorId: number;
 
-  @property({
-    type: 'string',
-    required: true,
-  })
-  requestStatusId: string;
+  @belongsTo(() => RequestType)
+  requestTypeId: number;
 
-  @property({
-    type: 'string',
-    required: true,
-  })
-  advisorId: string;
+  @belongsTo(() => RequestStatus)
+  requestStatusId: number;
 
-  @property({
-    type: 'string',
-    required: true,
-  })
-  propertyId: string;
+  @belongsTo(() => Customer)
+  customerId: number;
 
+  @hasMany(() => Report)
+  reports: Report[];
 
   constructor(data?: Partial<Request>) {
     super(data);

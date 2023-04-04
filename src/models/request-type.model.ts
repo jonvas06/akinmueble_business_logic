@@ -1,23 +1,26 @@
-import {Entity, model, property} from '@loopback/repository';
+import {Entity, model, property, hasMany} from '@loopback/repository';
+import {Request} from './request.model';
 
 @model()
 export class RequestType extends Entity {
   @property({
-    type: 'string',
+    type: 'number',
     id: true,
     generated: true,
   })
-  id?: string;
+  id?: number;
 
   @property({
     type: 'string',
     required: true,
     index: {
-      unique: true
-    }
+      unique: true,
+    },
   })
   requestTypeName: string;
 
+  @hasMany(() => Request)
+  requests: Request[];
 
   constructor(data?: Partial<RequestType>) {
     super(data);

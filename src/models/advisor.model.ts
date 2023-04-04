@@ -1,19 +1,33 @@
-import {Entity, model, property} from '@loopback/repository';
+import {
+  Entity,
+  belongsTo,
+  hasMany,
+  model,
+  property,
+} from '@loopback/repository';
+import {AdvisorStatus} from './advisor-status.model';
+import {Property} from './property.model';
+import {Request} from './request.model';
 
-@model()
+@model({
+  settings: {
+    foreignKeys: {
+      fk_advisor_advisorStatusId: {
+        name: 'fk_advisor_advisorStatusId',
+        entity: 'AdvisorStatus',
+        entityKey: 'id',
+        foreignKey: 'advisorStatusId',
+      },
+    },
+  },
+})
 export class Advisor extends Entity {
   @property({
-    type: 'string',
+    type: 'number',
     id: true,
     generated: true,
   })
-  id?: string;
-
-  @property({
-    type: 'string',
-    required: true,
-  })
-  advisorStatusId: string;
+  id?: number;
 
   @property({
     type: 'string',
@@ -41,8 +55,8 @@ export class Advisor extends Entity {
     type: 'string',
     required: true,
     index: {
-      unique: true
-    }
+      unique: true,
+    },
   })
   documentNumber: string;
 
@@ -50,8 +64,8 @@ export class Advisor extends Entity {
     type: 'string',
     required: true,
     index: {
-      unique: true
-    }
+      unique: true,
+    },
   })
   email: string;
 
@@ -73,6 +87,14 @@ export class Advisor extends Entity {
   })
   dateOfBirth: string;
 
+  @belongsTo(() => AdvisorStatus)
+  advisorStatusId: number;
+
+  @hasMany(() => Property)
+  properties: Property[];
+
+  @hasMany(() => Request)
+  requests: Request[];
 
   constructor(data?: Partial<Advisor>) {
     super(data);

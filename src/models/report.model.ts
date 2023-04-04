@@ -1,13 +1,25 @@
-import {Entity, model, property} from '@loopback/repository';
+import {Entity, belongsTo, model, property} from '@loopback/repository';
+import {Request} from './request.model';
 
-@model()
+@model({
+  settings: {
+    foreignKeys: {
+      fk_report_requestId: {
+        name: 'fk_report_requestId',
+        entity: 'Request',
+        entityKey: 'id',
+        foreignKey: 'requestId',
+      },
+    },
+  },
+})
 export class Report extends Entity {
   @property({
-    type: 'string',
+    type: 'number',
     id: true,
     generated: true,
   })
-  id?: string;
+  id?: number;
 
   @property({
     type: 'string',
@@ -15,12 +27,8 @@ export class Report extends Entity {
   })
   commentary: string;
 
-  @property({
-    type: 'string',
-    required: true,
-  })
-  requestId: string;
-
+  @belongsTo(() => Request)
+  requestId: number;
 
   constructor(data?: Partial<Report>) {
     super(data);

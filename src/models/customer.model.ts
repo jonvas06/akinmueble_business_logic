@@ -1,19 +1,20 @@
-import {Entity, model, property} from '@loopback/repository';
+import {Entity, model, property, hasMany} from '@loopback/repository';
+import {Request} from './request.model';
 
 @model()
 export class Customer extends Entity {
+  @property({
+    type: 'number',
+    id: true,
+    generated: true,
+  })
+  id?: number;
+
   @property({
     type: 'string',
     required: true,
   })
   firstName: string;
-
-  @property({
-    type: 'string',
-    id: true,
-    generated: true,
-  })
-  id?: string;
 
   @property({
     type: 'string',
@@ -35,8 +36,8 @@ export class Customer extends Entity {
     type: 'string',
     required: true,
     index: {
-      unique: true
-    }
+      unique: true,
+    },
   })
   documentNumber: string;
 
@@ -44,8 +45,8 @@ export class Customer extends Entity {
     type: 'string',
     required: true,
     index: {
-      unique: true
-    }
+      unique: true,
+    },
   })
   email: string;
 
@@ -61,6 +62,8 @@ export class Customer extends Entity {
   })
   address: string;
 
+  @hasMany(() => Request)
+  requests: Request[];
 
   constructor(data?: Partial<Customer>) {
     super(data);

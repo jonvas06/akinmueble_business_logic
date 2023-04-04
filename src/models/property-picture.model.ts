@@ -1,13 +1,25 @@
-import {Entity, model, property} from '@loopback/repository';
+import {Entity, belongsTo, model, property} from '@loopback/repository';
+import {Property} from './property.model';
 
-@model()
+@model({
+  settings: {
+    foreignKeys: {
+      fk_property_propertyId: {
+        name: 'fk_propertyPicture_propertyId',
+        entity: 'Property',
+        entityKey: 'id',
+        foreignKey: 'propertyId',
+      },
+    },
+  },
+})
 export class PropertyPicture extends Entity {
   @property({
-    type: 'string',
+    type: 'number',
     id: true,
     generated: true,
   })
-  id?: string;
+  id?: number;
 
   @property({
     type: 'string',
@@ -15,12 +27,8 @@ export class PropertyPicture extends Entity {
   })
   pictureSource: string;
 
-  @property({
-    type: 'string',
-    required: true,
-  })
-  propertyId: string;
-
+  @belongsTo(() => Property)
+  propertyId: number;
 
   constructor(data?: Partial<PropertyPicture>) {
     super(data);
@@ -31,4 +39,5 @@ export interface PropertyPictureRelations {
   // describe navigational properties here
 }
 
-export type PropertyPictureWithRelations = PropertyPicture & PropertyPictureRelations;
+export type PropertyPictureWithRelations = PropertyPicture &
+  PropertyPictureRelations;
