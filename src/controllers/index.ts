@@ -29,3 +29,4 @@ export * from './request-request-status.controller';
 export * from './request-status-request.controller';
 export * from './request-customer.controller';
 export * from './customer-request.controller';
+export * from './file-manager.controller';
