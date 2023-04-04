@@ -1,18 +1,7 @@
 import {Entity, belongsTo, model, property} from '@loopback/repository';
 import {Request} from './request.model';
 
-@model({
-  settings: {
-    foreignKeys: {
-      fk_report_requestId: {
-        name: 'fk_report_requestId',
-        entity: 'Request',
-        entityKey: 'id',
-        foreignKey: 'requestId',
-      },
-    },
-  },
-})
+@model()
 export class Report extends Entity {
   @property({
     type: 'number',

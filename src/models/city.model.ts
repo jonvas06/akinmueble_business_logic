@@ -9,18 +9,7 @@ import {
 import {Department} from './department.model';
 import {Property} from './property.model';
 
-@model({
-  settings: {
-    foreignKeys: {
-      fk_city_departmentId: {
-        name: 'fk_city_departmentId',
-        entity: 'Department',
-        entityKey: 'id',
-        foreignKey: 'departmentId',
-      },
-    },
-  },
-})
+@model()
 export class City extends Entity {
   @property({
     type: 'number',

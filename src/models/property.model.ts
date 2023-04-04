@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import {
   Entity,
   belongsTo,
@@ -14,48 +15,8 @@ import {PropertyStatus} from './property-status.model';
 import {PropertyType} from './property-type.model';
 import {Request} from './request.model';
 
-@model({
-  settings: {
-    foreignKeys: {
-      fk_property_advisorId: {
-        name: 'fk_property_advisorId',
-        entity: 'Advisor',
-        entityKey: 'id',
-        foreignKey: 'advisorId',
-      },
-      fk_property_propertyStatusId: {
-        name: 'fk_property_propertyStatusId',
-        entity: 'PropertyStatus',
-        entityKey: 'id',
-        foreignKey: 'propertyStatusId',
-      },
-      fk_property_cityId: {
-        name: 'fk_property_cityId',
-        entity: 'City',
-        entityKey: 'id',
-        foreignKey: 'cityId',
-      },
-      fk_property_offerTypeId: {
-        name: 'fk_property_offerTypeId',
-        entity: 'OfferType',
-        entityKey: 'id',
-        foreignKey: 'offerTypeId',
-      },
-      fk_property_propertyManagerId: {
-        name: 'fk_property_propertyManagerId',
-        entity: 'PropertyManager',
-        entityKey: 'id',
-        foreignKey: 'propertyManagerId',
-      },
-      fk_property_propertyTypeId: {
-        name: 'fk_property_propertyTypeId',
-        entity: 'PropertyType',
-        entityKey: 'id',
-        foreignKey: 'propertyTypeId',
-      },
-    },
-  },
-})
+
+@model()
 export class Property extends Entity {
   @property({
     type: 'number',

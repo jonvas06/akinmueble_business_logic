@@ -9,18 +9,7 @@ import {AdvisorStatus} from './advisor-status.model';
 import {Property} from './property.model';
 import {Request} from './request.model';
 
-@model({
-  settings: {
-    foreignKeys: {
-      fk_advisor_advisorStatusId: {
-        name: 'fk_advisor_advisorStatusId',
-        entity: 'AdvisorStatus',
-        entityKey: 'id',
-        foreignKey: 'advisorStatusId',
-      },
-    },
-  },
-})
+@model()
 export class Advisor extends Entity {
   @property({
     type: 'number',
