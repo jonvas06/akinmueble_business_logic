@@ -1,4 +1,8 @@
 require('dotenv').config();
+import {
+  AuthenticationComponent,
+  registerAuthenticationStrategy,
+} from '@loopback/authentication';
 import {BootMixin} from '@loopback/boot';
 import {ApplicationConfig} from '@loopback/core';
 import {RepositoryMixin} from '@loopback/repository';
@@ -9,6 +13,7 @@ import {
 } from '@loopback/rest-explorer';
 import {ServiceMixin} from '@loopback/service-proxy';
 import path from 'path';
+import {AuthStrategy} from './auth/strategy';
 import {MySequence} from './sequence';
 
 export {ApplicationConfig};
@@ -42,7 +47,7 @@ export class App extends BootMixin(
       },
     };
 
-    // registerAuthenticationStrategy(this, AuthStrategy);
-    // this.component(AuthenticationComponent);
+    registerAuthenticationStrategy(this, AuthStrategy);
+    this.component(AuthenticationComponent);
   }
 }

@@ -7,13 +7,13 @@ import {
   Where,
 } from '@loopback/repository';
 import {
-  post,
-  param,
+  del,
   get,
   getModelSchemaRef,
+  param,
   patch,
+  post,
   put,
-  del,
   requestBody,
   response,
 } from '@loopback/rest';
@@ -23,7 +23,7 @@ import {PropertyRepository} from '../repositories';
 export class PropertyController {
   constructor(
     @repository(PropertyRepository)
-    public propertyRepository : PropertyRepository,
+    public propertyRepository: PropertyRepository,
   ) {}
 
   @post('/properties')
@@ -52,9 +52,7 @@ export class PropertyController {
     description: 'Property model count',
     content: {'application/json': {schema: CountSchema}},
   })
-  async count(
-    @param.where(Property) where?: Where<Property>,
-  ): Promise<Count> {
+  async count(@param.where(Property) where?: Where<Property>): Promise<Count> {
     return this.propertyRepository.count(where);
   }
 
@@ -106,7 +104,8 @@ export class PropertyController {
   })
   async findById(
     @param.path.number('id') id: number,
-    @param.filter(Property, {exclude: 'where'}) filter?: FilterExcludingWhere<Property>
+    @param.filter(Property, {exclude: 'where'})
+    filter?: FilterExcludingWhere<Property>,
   ): Promise<Property> {
     return this.propertyRepository.findById(id, filter);
   }

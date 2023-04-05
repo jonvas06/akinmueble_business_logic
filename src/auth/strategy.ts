@@ -1,63 +1,72 @@
-// import {AuthenticationBindings} from '@loopback/authentication';
-// import {
-//   AuthenticationMetadata,
-//   AuthenticationStrategy,
-// } from '@loopback/authentication/dist/types';
-// import {inject, service} from '@loopback/core';
-// import {repository} from '@loopback/repository';
-// import {HttpErrors, Request} from '@loopback/rest';
-// import {UserProfile} from '@loopback/security';
-// import parseBearerToken from 'parse-bearer-token';
-// import {RoleMenuRepository} from '../repositories';
-// import {SecurityUserService} from '../services';
-// import {AuthService} from '../services/auth.service';
+import {
+  AuthenticationBindings,
+  AuthenticationMetadata,
+  AuthenticationStrategy,
+} from '@loopback/authentication';
+import {inject} from '@loopback/core';
+import {HttpErrors, Request} from '@loopback/rest';
+import {UserProfile} from '@loopback/security';
+import parseBearerToken from 'parse-bearer-token';
+import {SecurityConfiguration} from '../config/security.config';
+const fetch = require('node-fetch');
 
-// export class AuthStrategy implements AuthenticationStrategy {
-//   name: string = 'auth';
+export class AuthStrategy implements AuthenticationStrategy {
+  name: string = 'auth';
+  constructor(
+    @inject(AuthenticationBindings.METADATA)
+    private metadata: AuthenticationMetadata[],
+  ) {}
 
-//   constructor(
-//     @service(SecurityUserService)
-//     private securiryUserService: SecurityUserService,
-//     @inject(AuthenticationBindings.METADATA)
-//     private metadata: AuthenticationMetadata[],
-//     @repository(RoleMenuRepository)
-//     private rolMenuRepository: RoleMenuRepository,
-//     @service(AuthService)
-//     private authService: AuthService,
-//   ) {}
+  /**
+   * Autenticación de un usuario frente a una acción en la base de datos
+   * @param request la solicitud con el token
+   * @returns  el perfil de usuario, undefined cuando no tiene permiso o http error
+   */
 
-//   /**
-//    * It takes a request, and returns a promise that resolves to a user profile or
-//    * undefined
-//    * @param {Request} request - Request - The incoming request with the token.
-//    * @returns A UserProfile object, undefined when the user does not have permission.
-//    */
-//   async authenticate(request: Request): Promise<UserProfile | undefined> {
-//     try {
-//       let token = parseBearerToken(request);
-//       if (!token) {
-//         throw new HttpErrors[401](
-//           'No es posible ejecutar la acción por falta de un token',
-//         );
-//       }
-//       let roleId = await this.securiryUserService.getRoleToken(token);
+  async authenticate(request: Request): Promise<UserProfile | undefined> {
+    let token = parseBearerToken(request);
+    if (token) {
+      let idMenu: string = this.metadata[0].options![0];
+      let action: string = this.metadata[0].options![1];
+      console.log(this.metadata);
+      // conectar con el ms de seguridad
 
-//       if (!this.metadata || !this.metadata[0].options) {
-//         return undefined;
-//       }
+      const data = {
+        token: token,
+        idMenu: idMenu,
+        action: action,
+      };
+      const urlValidatePermissions = `${SecurityConfiguration.securityMicroserviceLink} /validar-permisos`;
+      let res = undefined;
+      try {
+        await fetch(urlValidatePermissions, {
+          method: 'post',
+          body: JSON.stringify(data),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+          .then((res: any) => res.json())
+          .then((json: any) => {
+            res = json;
+          });
 
-//       let menuId: string = this.metadata[0]!.options![0];
-//       let action: string = this.metadata[0]!.options![1];
-
-//       let response = await this.authService.verifiacatePermitsUserByRol(
-//         roleId,
-//         menuId,
-//         action,
-//       );
-//       return response;
-//     } catch (error) {
-//       console.log(error);
-//       throw error;
-//     }
-//   }
-// }
+        if (res) {
+          let perfil: UserProfile = Object.assign({
+            permitido: 'OK',
+          });
+          return perfil;
+        } else {
+          return undefined;
+        }
+      } catch (e) {
+        throw new HttpErrors[401](
+          'No  se tiene permisos sobre la accion a ejecutar',
+        );
+      }
+    }
+    throw new HttpErrors[401](
+      'No es posible ejecutar la acción por falta de un token',
+    );
+  }
+}
