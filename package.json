@@ -49,6 +49,7 @@
     "!*/__tests__"
   ],
   "dependencies": {
+    "@loopback/authentication": "^9.0.9",
     "@loopback/boot": "^5.0.9",
     "@loopback/core": "^4.0.9",
     "@loopback/repository": "^5.1.4",
@@ -57,12 +58,14 @@
     "@loopback/service-proxy": "^5.0.9",
     "dotenv": "^16.0.3",
     "loopback-connector-mysql": "^5.4.4",
+    "multer": "^1.4.5-lts.1",
     "tslib": "^2.0.0"
   },
   "devDependencies": {
     "@loopback/build": "^9.0.9",
     "@loopback/eslint-config": "^13.0.9",
     "@loopback/testlab": "^5.0.9",
+    "@types/multer": "^1.4.7",
     "@types/node": "^14.18.36",
     "eslint": "^8.35.0",
     "source-map-support": "^0.5.21",
