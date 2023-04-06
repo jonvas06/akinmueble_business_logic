@@ -1,3 +1,4 @@
+import {authenticate} from '@loopback/authentication';
 import {
   Count,
   CountSchema,
@@ -15,17 +16,22 @@ import {
   post,
   requestBody,
 } from '@loopback/rest';
-import {
-  Advisor,
-  Property,
-} from '../models';
+import {SecurityConfiguration} from '../config/security.config';
+import {Advisor, Property} from '../models';
 import {AdvisorRepository} from '../repositories';
 
 export class AdvisorPropertyController {
   constructor(
-    @repository(AdvisorRepository) protected advisorRepository: AdvisorRepository,
-  ) { }
-
+    @repository(AdvisorRepository)
+    protected advisorRepository: AdvisorRepository,
+  ) {}
+  @authenticate({
+    strategy: 'auth',
+    options: [
+      SecurityConfiguration.menus.menuPropertyId,
+      SecurityConfiguration.actions.listAction,
+    ],
+  })
   @get('/advisors/{id}/properties', {
     responses: {
       '200': {
@@ -45,6 +51,13 @@ export class AdvisorPropertyController {
     return this.advisorRepository.properties(id).find(filter);
   }
 
+  @authenticate({
+    strategy: 'auth',
+    options: [
+      SecurityConfiguration.menus.menuPropertyId,
+      SecurityConfiguration.actions.createAction,
+    ],
+  })
   @post('/advisors/{id}/properties', {
     responses: {
       '200': {
@@ -61,15 +74,23 @@ export class AdvisorPropertyController {
           schema: getModelSchemaRef(Property, {
             title: 'NewPropertyInAdvisor',
             exclude: ['id'],
-            optional: ['advisorId']
+            optional: ['advisorId'],
           }),
         },
       },
-    }) property: Omit<Property, 'id'>,
+    })
+    property: Omit<Property, 'id'>,
   ): Promise<Property> {
     return this.advisorRepository.properties(id).create(property);
   }
 
+  @authenticate({
+    strategy: 'auth',
+    options: [
+      SecurityConfiguration.menus.menuPropertyId,
+      SecurityConfiguration.actions.editAction,
+    ],
+  })
   @patch('/advisors/{id}/properties', {
     responses: {
       '200': {
@@ -88,12 +109,22 @@ export class AdvisorPropertyController {
       },
     })
     property: Partial<Property>,
-    @param.query.object('where', getWhereSchemaFor(Property)) where?: Where<Property>,
+    @param.query.object('where', getWhereSchemaFor(Property))
+    where?: Where<Property>,
   ): Promise<Count> {
-    return this.advisorRepository.properties(id).patch(property, where);
+    return this.advisorRepository
+      .properties(id)
+      .patch(property, {id: property.id});
   }
 
-  @del('/advisors/{id}/properties', {
+  @authenticate({
+    strategy: 'auth',
+    options: [
+      SecurityConfiguration.menus.menuPropertyId,
+      SecurityConfiguration.actions.removeAction,
+    ],
+  })
+  @del('/advisors/{advisorId}/properties/{propertyId}', {
     responses: {
       '200': {
         description: 'Advisor.Property DELETE success count',
@@ -102,9 +133,13 @@ export class AdvisorPropertyController {
     },
   })
   async delete(
-    @param.path.number('id') id: number,
-    @param.query.object('where', getWhereSchemaFor(Property)) where?: Where<Property>,
+    @param.path.number('advisorId') advisorId: number,
+    @param.path.number('propertyId') propertyId: number,
+    @param.query.object('where', getWhereSchemaFor(Property))
+    where?: Where<Property>,
   ): Promise<Count> {
-    return this.advisorRepository.properties(id).delete(where);
+    return this.advisorRepository
+      .properties(advisorId)
+      .delete({id: propertyId});
   }
 }

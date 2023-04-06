@@ -1,4 +1,4 @@
-import {Entity, model, property, hasMany} from '@loopback/repository';
+import {Entity, hasMany, model, property} from '@loopback/repository';
 import {Property} from './property.model';
 
 @model()
@@ -65,8 +65,12 @@ export class PropertyManager extends Entity {
   @property({
     type: 'date',
     required: true,
+    jsonSchema: {
+      format: 'date',
+      pattern: '^(\\d{4})-(\\d{2})-(\\d{2})$',
+    },
   })
-  dateOfBirth: string;
+  dateOfBirth: Date;
 
   @hasMany(() => Property)
   properties: Property[];

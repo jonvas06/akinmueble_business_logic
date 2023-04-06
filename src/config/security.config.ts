@@ -6,9 +6,12 @@ export namespace SecurityConfiguration {
   export const PORT_DB = process.env.PORT_DB;
   export const securityMicroserviceLink: string = 'http://localhost:3000';
 
+  export const menus = {
+    menuPropertyId: '642d9df302e1597baa66e444',
+  };
   export const actions = {
     listAction: 'list',
-    saveAction: 'save',
+    createAction: 'create',
     editAction: 'edit',
     removeAction: 'remove',
     downloadAction: 'download',

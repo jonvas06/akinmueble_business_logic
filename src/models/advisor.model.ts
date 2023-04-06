@@ -84,8 +84,12 @@ export class Advisor extends Entity {
   @property({
     type: 'date',
     required: true,
+    jsonSchema: {
+      format: 'date',
+      pattern: '^(\\d{4})-(\\d{2})-(\\d{2})$',
+    },
   })
-  dateOfBirth: string;
+  dateOfBirth: Date;
 
   @belongsTo(() => AdvisorStatus)
   advisorStatusId: number;

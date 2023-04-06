@@ -29,6 +29,7 @@ export class AuthStrategy implements AuthenticationStrategy {
       let idMenu: string = this.metadata[0].options![0];
       let action: string = this.metadata[0].options![1];
       console.log(this.metadata);
+
       // conectar con el ms de seguridad
 
       const data = {
@@ -36,7 +37,7 @@ export class AuthStrategy implements AuthenticationStrategy {
         idMenu: idMenu,
         action: action,
       };
-      const urlValidatePermissions = `${SecurityConfiguration.securityMicroserviceLink} /validar-permisos`;
+      const urlValidatePermissions = `${SecurityConfiguration.securityMicroserviceLink}/Validate-permissions`;
       let res = undefined;
       try {
         await fetch(urlValidatePermissions, {
@@ -53,7 +54,7 @@ export class AuthStrategy implements AuthenticationStrategy {
 
         if (res) {
           let perfil: UserProfile = Object.assign({
-            permitido: 'OK',
+            permitted: 'OK',
           });
           return perfil;
         } else {
