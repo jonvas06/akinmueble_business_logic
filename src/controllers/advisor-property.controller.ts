@@ -120,7 +120,7 @@ export class AdvisorPropertyController {
   @authenticate({
     strategy: 'auth',
     options: [
-      SecurityConfiguration.menus.menuPropertyId,
+      SecurityConfiguration.menus.menuRequestId,
       SecurityConfiguration.actions.removeAction,
     ],
   })

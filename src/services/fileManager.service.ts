@@ -1,12 +1,17 @@
 import {BindingScope, injectable} from '@loopback/core';
+import {repository} from '@loopback/repository';
 import {HttpErrors, Request, Response} from '@loopback/rest';
 import multer from 'multer';
 import path from 'path';
 import {generalConfiguration} from '../config/general.config';
+import {PropertyPictureRepository} from '../repositories';
 
 @injectable({scope: BindingScope.TRANSIENT})
 export class FileManagerService {
-  constructor() {}
+  constructor(
+    @repository(PropertyPictureRepository)
+    protected propertyPictureRepository: PropertyPictureRepository,
+  ) {}
 
   /**
    * Return a config for multer storage
@@ -98,5 +103,23 @@ export class FileManagerService {
     const resolved = path.resolve(folder, fileName);
     if (resolved.startsWith(folder)) return resolved;
     throw new HttpErrors[400](`Este archivo no es válido: ${fileName}`);
+  }
+
+  public getPictures(fkProperty: number) {
+    try {
+      this.propertyPictureRepository.find({
+        where: {
+          propertyId: fkProperty,
+        },
+      });
+      let filePath = path.join(
+        __dirname,
+        generalConfiguration.propertyPicturesFolder,
+      );
+
+      return filePath;
+    } catch (e) {
+      throw new HttpErrors[400]('El tipo de archivo no es válido');
+    }
   }
 }

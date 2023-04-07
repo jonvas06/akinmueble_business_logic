@@ -14,7 +14,9 @@ import path from 'path';
 import {promisify} from 'util';
 import {generalConfiguration} from '../config/general.config';
 
+import {authenticate} from '@loopback/authentication';
 import fs from 'fs';
+import {SecurityConfiguration} from '../config/security.config';
 import {PropertyRepository} from '../repositories';
 import {FileManagerService} from '../services/fileManager.service';
 const readdir = promisify(fs.readdir);
@@ -28,44 +30,45 @@ export class FileManagerController {
   ) {}
 
   /* Handles a POST request to upload a property picture file. */
-  @post('/upload-property-pictures', {
-    responses: {
-      200: {
-        content: {
-          'application/json': {
-            schema: {
-              type: 'object',
-            },
-          },
-        },
-        description: 'file to upload',
-      },
-    },
-  })
-  async uploadPictureFile(
-    @inject(RestBindings.Http.RESPONSE) response: Response,
-    @requestBody.file() request: Request,
-  ): Promise<object | false> {
-    const filePath = path.join(
-      __dirname,
-      generalConfiguration.propertyPicturesFolder,
-    );
 
-    let res = await this.fileManagerServcie.StoreFileToPath(
-      filePath,
-      generalConfiguration.propertyPicturePath,
-      request,
-      response,
-      generalConfiguration.pictureExtensions,
-    );
-    if (res) {
-      const filename = response.req?.file?.filename;
-      if (filename) {
-        return {file: filename};
-      }
-    }
-    return res;
-  }
+  // @post('/upload-property-pictures', {
+  //   responses: {
+  //     200: {
+  //       content: {
+  //         'application/json': {
+  //           schema: {
+  //             type: 'object',
+  //           },
+  //         },
+  //       },
+  //       description: 'file to upload',
+  //     },
+  //   },
+  // })
+  // async uploadPictureFile(
+  //   @inject(RestBindings.Http.RESPONSE) response: Response,
+  //   @requestBody.file() request: Request,
+  // ): Promise<object | false> {
+  //   const filePath = path.join(
+  //     __dirname,
+  //     generalConfiguration.propertyPicturesFolder,
+  //   );
+
+  //   let res = await this.fileManagerServcie.StoreFileToPath(
+  //     filePath,
+  //     generalConfiguration.propertyPicturePath,
+  //     request,
+  //     response,
+  //     generalConfiguration.pictureExtensions,
+  //   );
+  //   if (res) {
+  //     const filename = response.req?.file?.filename;
+  //     if (filename) {
+  //       return {file: filename};
+  //     }
+  //   }
+  //   return res;
+  // }
 
   @post('/upload-request-contracts', {
     responses: {
@@ -106,6 +109,13 @@ export class FileManagerController {
     return res;
   }
 
+  @authenticate({
+    strategy: 'auth',
+    options: [
+      SecurityConfiguration.menus.menuRequestId,
+      SecurityConfiguration.actions.uploadAction,
+    ],
+  })
   @post('/property/{id}/upload-property-file', {
     responses: {
       200: {
@@ -187,5 +197,29 @@ export class FileManagerController {
     const file = this.fileManagerServcie.validateFileName(folder, fileName);
     response.download(file, fileName);
     return response;
+  }
+
+  @get('/Property/{id}/Pictures', {
+    responses: {
+      200: {
+        content: {
+          // string[]
+          'application/json': {
+            schema: {
+              type: 'array',
+              items: {
+                type: 'string',
+              },
+            },
+          },
+        },
+        description: 'Una lista de archivos',
+      },
+    },
+  })
+  async getPictureListThrowthProperty(@param.path.number('type') type: number) {
+    const folderPath = this.fileManagerServcie.getFileByType(type);
+    const files = await readdir(folderPath);
+    return files;
   }
 }
