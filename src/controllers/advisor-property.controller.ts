@@ -95,39 +95,6 @@ export class AdvisorPropertyController {
     return this.advisorRepository.properties(id).create(property);
   }
 
-  // @authenticate({
-  //   strategy: 'auth',
-  //   options: [
-  //     SecurityConfiguration.menus.menuPropertyId,
-  //     SecurityConfiguration.actions.editAction,
-  //   ],
-  // })
-  // @patch('/advisors/{id}/property', {
-  //   responses: {
-  //     '200': {
-  //       description: 'Advisor.Property PATCH success count',
-  //       content: {'application/json': {schema: CountSchema}},
-  //     },
-  //   },
-  // })
-  // async patch(
-  //   @param.path.number('id') id: number,
-  //   @requestBody({
-  //     content: {
-  //       'application/json': {
-  //         schema: getModelSchemaRef(Property, {partial: true}),
-  //       },
-  //     },
-  //   })
-  //   property: Partial<Property>,
-  //   @param.query.object('where', getWhereSchemaFor(Property))
-  //   where?: Where<Property>,
-  // ): Promise<Count> {
-  //   return this.advisorRepository
-  //     .properties(id)
-  //     .patch(property, {id: property.id});
-  // }
-
   @authenticate({
     strategy: 'auth',
     options: [
@@ -162,72 +129,18 @@ export class AdvisorPropertyController {
         property as Property,
       );
     } catch (error) {
-      console.log('Error name -> ', error.name);
       if (error.name == 'Error') {
         throw new HttpErrors[400](error.message);
       }
       throw error;
     }
   }
-  // @patch('/advisors/{advisorId}/properties/{propertyId}', {
-  //   responses: {
-  //     '200': {
-  //       description: 'Advisor.Property PATCH success',
-  //       content: {'application/json': {schema: getModelSchemaRef(Property)}},
-  //     },
-  //   },
-  // })
-  // async patch(
-  //   @param.path.number('advisorId') advisorId: number,
-  //   @param.path.number('propertyId') propertyId: number,
-  //   @requestBody({
-  //     content: {'application/json': {schema: getModelSchemaRef(Property)}},
-  //   })
-  //   property: Property,
-  //   @param.query.object('where', getWhereSchemaFor(Property))
-  //   where?: Where<Property>,
-  // ): Promise<Property> {
-  //   this.advisorRepository
-  //     .properties(advisorId)
-  //     .patch(property, {id: property.id});
-
-  //   return this.propertyRepository.findById(propertyId);
-  // }
-
-  // @put('/advisors/{advisorId}/properties/{propertyId}')
-  // @response(200, {
-  //   description: 'Property PUT success',
-  //   content: {'application/json': {schema: getModelSchemaRef(Property)}},
-  // })
-  // async replaceById(
-  //   @requestBody({
-  //     content: {
-  //       'application/json': {
-  //         schema: getModelSchemaRef(Property, {exclude: ['id']}),
-  //       },
-  //     },
-  //   })
-  //   property: Property,
-  //   @param.path.number('advisorId') advisorId: number,
-  //   @param.path.number('propertyId') propertyId: number,
-  // ): Promise<Property> {
-  //   await this.propertyRepository.updateAll(property, {
-  //     id: propertyId,
-  //     advisorId: advisorId,
-  //   });
-
-  //   // await this.propertyRepository.updateAll(
-  //   //   { ...property, advisorId: advisorId },
-  //   //   { advisorId: advisorId, id: propertyId }
-  //   // );
-  //   return this.propertyRepository.findById(propertyId);
-  // }
 
   @authenticate({
     strategy: 'auth',
     options: [
-      SecurityConfiguration.menus.menuRequestId,
-      SecurityConfiguration.actions.removeAction,
+      SecurityConfiguration.menus.menuPropertyId,
+      SecurityConfiguration.actions.deleteAction,
     ],
   })
   @del('/advisors/{advisorId}/properties/{propertyId}', {
@@ -244,8 +157,9 @@ export class AdvisorPropertyController {
     @param.query.object('where', getWhereSchemaFor(Property))
     where?: Where<Property>,
   ): Promise<Count> {
-    return this.advisorRepository
-      .properties(advisorId)
-      .delete({id: propertyId});
+    return this.advisorPropertyService.deletePropertyByAdvisor(
+      advisorId,
+      propertyId,
+    );
   }
 }

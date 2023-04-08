@@ -1,6 +1,7 @@
 import {BindingScope, injectable} from '@loopback/context';
-import {repository} from '@loopback/repository';
+import {Count, repository} from '@loopback/repository';
 import {HttpErrors} from '@loopback/rest';
+import {format} from 'date-fns';
 import {Property, Request} from '../models';
 import {AdvisorRepository, PropertyRepository} from '../repositories';
 
@@ -51,7 +52,7 @@ export class AdvisorPropertyService {
     }
 
     this.validateChangePropertyStatus(
-      newProperty as Property,
+      newProperty,
       oldProperty,
       propertyRequest,
     );
@@ -105,6 +106,26 @@ export class AdvisorPropertyService {
           'No puedes cambiar el estado de una propiedad que tiene solicitudes a privada',
         );
       }
+    }
+
+    const dateNow: Date = new Date(format(new Date(), 'yyyy-MM-dd'));
+
+    if (
+      oldProperty.propertyStatusId == 3 &&
+      newProperty.propertyStatusId == 1 &&
+      oldProperty.dataOccupied &&
+      oldProperty.dataOccupied >= dateNow
+    ) {
+      throw new HttpErrors[403](
+        `No puedes cambiar el estado de una propiedad a disponible si actualmente se encuentra rentada por alguien hasta la fecha ${oldProperty.dataOccupied}`,
+      );
+    } else if (
+      oldProperty.propertyStatusId == 3 &&
+      newProperty.propertyStatusId == 1 &&
+      oldProperty.dataOccupied &&
+      oldProperty.dataOccupied < dateNow
+    ) {
+      newProperty.dataOccupied = undefined;
     }
   }
 
@@ -165,5 +186,33 @@ export class AdvisorPropertyService {
         'No puedes cambiar el tipo de propiedad a una propiedad que tiene solicitudes',
       );
     }
+  }
+
+  public async deletePropertyByAdvisor(
+    advisorId: number,
+    propertyId: number,
+  ): Promise<Count> {
+    const property = await this.propertyRepository.findOne({
+      where: {id: propertyId, advisorId: advisorId},
+      include: [{relation: 'requests'}],
+    });
+
+    if (!property) {
+      throw new HttpErrors[403](
+        'No tienes permisos para eliminar esta propiedad',
+      );
+    }
+
+    const propertyRequest = property.requests;
+
+    if (propertyRequest && propertyRequest.length > 0) {
+      throw new HttpErrors[403](
+        'No puedes eliminar una propiedad que tiene solicitudes',
+      );
+    }
+
+    return this.advisorRepository
+      .properties(advisorId)
+      .delete({id: propertyId});
   }
 }

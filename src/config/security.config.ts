@@ -14,7 +14,7 @@ export namespace SecurityConfiguration {
     listAction: 'list',
     createAction: 'create',
     editAction: 'edit',
-    removeAction: 'remove',
+    deleteAction: 'delete',
     downloadAction: 'download',
     assignAction: 'assign',
     uploadAction: 'upload',

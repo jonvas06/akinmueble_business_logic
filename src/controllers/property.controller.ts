@@ -1,4 +1,4 @@
-import {Filter, repository} from '@loopback/repository';
+import {Filter, FilterExcludingWhere, repository} from '@loopback/repository';
 import {get, getModelSchemaRef, param, response} from '@loopback/rest';
 import {Property} from '../models';
 import {PropertyRepository} from '../repositories';
@@ -18,7 +18,7 @@ export class PropertyController {
   // })
 
   /**
-   * Se comenta este POST ya que aun no vemos la necesidad de que sea usado, ya
+   * Se comenta este POST ya que aun no vemos la necesidad de que sea usado, pues
    * que el unico que puede crear propiedades hasta el momento es el ASESOR
    * Posiblemente mas adelante se habilitara esta accion para el administrador
    */
@@ -61,7 +61,6 @@ export class PropertyController {
    *
    * Posiblemente mas adelante tambien la necesite administrador
    */
-
   @get('/properties')
   @response(200, {
     description: 'Array of Property model instances',
@@ -82,8 +81,11 @@ export class PropertyController {
 
   /**
    * Se comenta este PATCH ya que aun no vemos la necesidad de que sea usado, ya
-   * que el unico que puede EDITAR propiedades hasta el momento es el ASESOR
-   * Posiblemente mas adelante se habilitara esta accion para el administrador
+   * que el unico que puede EDITAR propiedades hasta el momento es el ASESOR.
+   * Posiblemente mas adelante se habilitara esta accion para el administrador.
+   * Probablemente también una parte del filtro where se dejará como responsabilidad
+   * a un servicio
+   *
    */
   // @patch('/properties')
   // @response(200, {
@@ -105,27 +107,25 @@ export class PropertyController {
   // }
 
   /**
-   * Se comenta este GET ya que aun no vemos la necesidad de que sea usado, ya
-   * que el unico que puede OBTENER propiedades hasta el momento es el ASESOR,
-   * y solo puede obtener las propiedas que ha creado
-   * Posiblemente mas adelante se habilitara esta accion para el administrador
+   * Se deja habilitado este enpoint ya que será necesario
+   * para verlos detalles de una propiedad en lapágina web
    */
-  // @get('/properties/{id}')
-  // @response(200, {
-  //   description: 'Property model instance',
-  //   content: {
-  //     'application/json': {
-  //       schema: getModelSchemaRef(Property, {includeRelations: true}),
-  //     },
-  //   },
-  // })
-  // async findById(
-  //   @param.path.number('id') id: number,
-  //   @param.filter(Property, {exclude: 'where'})
-  //   filter?: FilterExcludingWhere<Property>,
-  // ): Promise<Property> {
-  //   return this.propertyRepository.findById(id, filter);
-  // }
+  @get('/properties/{id}')
+  @response(200, {
+    description: 'Property model instance',
+    content: {
+      'application/json': {
+        schema: getModelSchemaRef(Property, {includeRelations: true}),
+      },
+    },
+  })
+  async findById(
+    @param.path.number('id') id: number,
+    @param.filter(Property, {exclude: 'where'})
+    filter?: FilterExcludingWhere<Property>,
+  ): Promise<Property> {
+    return this.propertyRepository.findById(id, filter);
+  }
 
   /**
    * Se comenta este PATCH ya que aun no vemos la necesidad de que sea usado, ya
@@ -167,7 +167,7 @@ export class PropertyController {
   /**
    * Se comenta este DELETE ya que aun no vemos la necesidad de que sea usado, ya
    * que el unico que puede ELIMINAR propiedades hasta el momento es el ASESOR
-   * Posiblemente mas adelante se habilitara esta accion para el administrador
+   * Posiblemente mas adelante se habilitara esta acción para el administrador
    */
   // @del('/properties/{id}')
   // @response(204, {

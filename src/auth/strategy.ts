@@ -34,7 +34,7 @@ export class AuthStrategy implements AuthenticationStrategy {
         idMenu: idMenu,
         action: action,
       };
-      const urlValidatePermissions = `${SecurityConfiguration.securityMicroserviceLink}/Validate-permissions`;
+      const urlValidatePermissions = `${SecurityConfiguration.securityMicroserviceLink}/validate-permissions`;
       let res = undefined;
       try {
         await fetch(urlValidatePermissions, {
@@ -44,7 +44,14 @@ export class AuthStrategy implements AuthenticationStrategy {
             'Content-Type': 'application/json',
           },
         })
-          .then((res: any) => res.json())
+          .then((res: any) => {
+            if (res.statusText === 'No Content') {
+              throw new HttpErrors[401](
+                'No  se tiene permisos sobre la accion a ejecutar',
+              );
+            }
+            return res.json();
+          })
           .then((json: any) => {
             res = json;
           });
@@ -58,9 +65,7 @@ export class AuthStrategy implements AuthenticationStrategy {
           return undefined;
         }
       } catch (e) {
-        throw new HttpErrors[401](
-          'No  se tiene permisos sobre la accion a ejecutar',
-        );
+        throw e;
       }
     }
     throw new HttpErrors[401](
