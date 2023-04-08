@@ -122,6 +122,7 @@ export class Property extends Entity {
 
 export interface PropertyRelations {
   // describe navigational properties here
+  requests: Request;
 }
 
 export type PropertyWithRelations = Property & PropertyRelations;

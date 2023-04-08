@@ -28,9 +28,6 @@ export class AuthStrategy implements AuthenticationStrategy {
     if (token) {
       let idMenu: string = this.metadata[0].options![0];
       let action: string = this.metadata[0].options![1];
-      console.log(this.metadata);
-
-      // conectar con el ms de seguridad
 
       const data = {
         token: token,
