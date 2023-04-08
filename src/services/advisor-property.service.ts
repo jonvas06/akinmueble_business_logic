@@ -2,7 +2,7 @@ import {BindingScope, injectable} from '@loopback/context';
 import {Count, repository} from '@loopback/repository';
 import {HttpErrors} from '@loopback/rest';
 import {format} from 'date-fns';
-import {Property, Request} from '../models';
+import {Property, PropertyPicture, Request} from '../models';
 import {AdvisorRepository, PropertyRepository} from '../repositories';
 
 @injectable({scope: BindingScope.TRANSIENT})
@@ -20,7 +20,7 @@ export class AdvisorPropertyService {
   ) {
     const oldProperty = await this.propertyRepository.findOne({
       where: {id: newProperty.id, advisorId: advisortId},
-      include: [{relation: 'requests'}],
+      include: [{relation: 'requests'}, {relation: 'propertyPictures'}],
     });
 
     if (!oldProperty) {
@@ -29,7 +29,8 @@ export class AdvisorPropertyService {
       );
     }
 
-    const propertyRequest = oldProperty.requests;
+    const propertyRequest: Request[] = oldProperty.requests;
+    console.log(propertyRequest);
 
     if (
       oldProperty.price !== newProperty.price &&
@@ -94,6 +95,18 @@ export class AdvisorPropertyService {
     if (newProperty.propertyStatusId == 3) {
       throw new HttpErrors[403](
         'La propiedad solo podrá tener un estado de rentada cuando una solicitud de renta para la propiedad sea aceptada',
+      );
+    }
+
+    const propertyPictures: PropertyPicture[] = oldProperty.propertyPictures;
+    console.log(propertyPictures);
+    if (
+      newProperty.propertyStatusId == 1 &&
+      oldProperty.propertyStatusId == 4 &&
+      (!propertyPictures || propertyPictures.length < 1)
+    ) {
+      throw new HttpErrors[403](
+        'No puedes cambiar el estado de una propiedad a disponible si no tiene por lo menos una fotografía',
       );
     }
 
