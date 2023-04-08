@@ -30,7 +30,6 @@ export class AdvisorPropertyService {
     }
 
     const propertyRequest: Request[] = oldProperty.requests;
-    console.log(propertyRequest);
 
     if (
       oldProperty.price !== newProperty.price &&
@@ -99,7 +98,6 @@ export class AdvisorPropertyService {
     }
 
     const propertyPictures: PropertyPicture[] = oldProperty.propertyPictures;
-    console.log(propertyPictures);
     if (
       newProperty.propertyStatusId == 1 &&
       oldProperty.propertyStatusId == 4 &&
