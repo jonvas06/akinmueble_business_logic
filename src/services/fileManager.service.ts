@@ -1,12 +1,19 @@
 import {BindingScope, injectable} from '@loopback/core';
+import {repository} from '@loopback/repository';
 import {HttpErrors, Request, Response} from '@loopback/rest';
 import multer from 'multer';
 import path from 'path';
 import {generalConfiguration} from '../config/general.config';
+import {PropertyPictureRepository, PropertyRepository} from '../repositories';
 
 @injectable({scope: BindingScope.TRANSIENT})
 export class FileManagerService {
-  constructor() {}
+  constructor(
+    @repository(PropertyPictureRepository)
+    protected propertyPictureRepository: PropertyPictureRepository,
+    @repository(PropertyRepository)
+    protected propertyRepository: PropertyRepository,
+  ) {}
 
   /**
    * Return a config for multer storage

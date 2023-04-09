@@ -4,4 +4,19 @@ export namespace SecurityConfiguration {
   export const dataBase = process.env.DATABASE;
   export const hostDb = process.env.HOST_DB;
   export const PORT_DB = process.env.PORT_DB;
+  export const securityMicroserviceLink: string = 'http://localhost:3000';
+
+  export const menus = {
+    menuPropertyId: '642d9df302e1597baa66e444',
+    menuRequestId: '642d9e0d02e1597baa66e445',
+  };
+  export const actions = {
+    listAction: 'list',
+    createAction: 'create',
+    editAction: 'edit',
+    deleteAction: 'delete',
+    downloadAction: 'download',
+    assignAction: 'assign',
+    uploadAction: 'upload',
+  };
 }
