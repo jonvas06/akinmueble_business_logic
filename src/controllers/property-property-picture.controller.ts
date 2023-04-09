@@ -109,7 +109,6 @@ export class PropertyPropertyPictureController {
   async delete(
     @param.path.number('propertyId') propertyId: number,
     @param.path.number('pictureId') pictureId: number,
-    // @param.query.object('where', getWhereSchemaFor(PropertyPicture)) where?: Where<PropertyPicture>,
   ): Promise<Count> {
     try {
       return this.propertyPropertyPictureService.deletePictureTroughProperty(
