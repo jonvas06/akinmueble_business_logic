@@ -4,13 +4,15 @@ import {HttpErrors, Request, Response} from '@loopback/rest';
 import multer from 'multer';
 import path from 'path';
 import {generalConfiguration} from '../config/general.config';
-import {PropertyPictureRepository} from '../repositories';
+import {PropertyPictureRepository, PropertyRepository} from '../repositories';
 
 @injectable({scope: BindingScope.TRANSIENT})
 export class FileManagerService {
   constructor(
     @repository(PropertyPictureRepository)
     protected propertyPictureRepository: PropertyPictureRepository,
+    @repository(PropertyRepository)
+    protected propertyRepository: PropertyRepository,
   ) {}
 
   /**
@@ -103,23 +105,5 @@ export class FileManagerService {
     const resolved = path.resolve(folder, fileName);
     if (resolved.startsWith(folder)) return resolved;
     throw new HttpErrors[400](`Este archivo no es válido: ${fileName}`);
-  }
-
-  public getPictures(fkProperty: number) {
-    try {
-      this.propertyPictureRepository.find({
-        where: {
-          propertyId: fkProperty,
-        },
-      });
-      let filePath = path.join(
-        __dirname,
-        generalConfiguration.propertyPicturesFolder,
-      );
-
-      return filePath;
-    } catch (e) {
-      throw new HttpErrors[400]('El tipo de archivo no es válido');
-    }
   }
 }
