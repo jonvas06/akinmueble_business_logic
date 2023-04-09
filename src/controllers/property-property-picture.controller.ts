@@ -75,7 +75,6 @@ export class PropertyPropertyPictureController {
   async uploadPictureFileTroughProperty(
     @param.path.number('id') id: number,
     @inject(RestBindings.Http.RESPONSE) response: Response,
-
     @requestBody.file() request: Request,
   ): Promise<object | false> {
     try {

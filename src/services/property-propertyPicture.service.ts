@@ -95,7 +95,7 @@ export class PropertyPropertyPictureService {
         propertyRequest.length > 0
       ) {
         throw new HttpErrors[400](
-          'No se pueden eliminar todas las fotos de una propiedad con solicitudes, si quiere eliminar esta, debe cargar otra antes.',
+          'No se pueden eliminar todas las fotos de una propiedad con solicitudes. Si quiere eliminar esta, debe cargar otra antes.',
         );
       }
 
@@ -105,7 +105,7 @@ export class PropertyPropertyPictureService {
         picture.pictureSource,
       );
 
-      await fs.unlinkSync(filePath);
+      fs.unlinkSync(filePath);
 
       return this.propertyRepository
         .propertyPictures(propertyId)

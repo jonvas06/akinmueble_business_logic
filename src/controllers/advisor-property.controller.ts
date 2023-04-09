@@ -124,7 +124,7 @@ export class AdvisorPropertyController {
     where?: Where<Property>,
   ): Promise<Property> {
     try {
-      return await this.advisorPropertyService.createPropertyByAdvisor(
+      return await this.advisorPropertyService.editPropertyByAdvisor(
         id,
         property as Property,
       );
@@ -154,8 +154,6 @@ export class AdvisorPropertyController {
   async delete(
     @param.path.number('advisorId') advisorId: number,
     @param.path.number('propertyId') propertyId: number,
-    @param.query.object('where', getWhereSchemaFor(Property))
-    where?: Where<Property>,
   ): Promise<Count> {
     return this.advisorPropertyService.deletePropertyByAdvisor(
       advisorId,

@@ -14,7 +14,7 @@ export class AdvisorPropertyService {
     private propertyRepository: PropertyRepository,
   ) {}
 
-  public async createPropertyByAdvisor(
+  public async editPropertyByAdvisor(
     advisortId: number,
     newProperty: Property,
   ) {
@@ -56,11 +56,7 @@ export class AdvisorPropertyService {
       oldProperty,
       propertyRequest,
     );
-    this.validateChangeOfferType(
-      newProperty as Property,
-      oldProperty,
-      propertyRequest,
-    );
+    this.validateChangeOfferType(newProperty, oldProperty, propertyRequest);
     this.validateChangePropertyType(newProperty, oldProperty, propertyRequest);
 
     await this.advisorRepository
@@ -99,8 +95,8 @@ export class AdvisorPropertyService {
 
     const propertyPictures: PropertyPicture[] = oldProperty.propertyPictures;
     if (
-      newProperty.propertyStatusId == 1 &&
       oldProperty.propertyStatusId == 4 &&
+      newProperty.propertyStatusId == 1 &&
       (!propertyPictures || propertyPictures.length < 1)
     ) {
       throw new HttpErrors[403](
