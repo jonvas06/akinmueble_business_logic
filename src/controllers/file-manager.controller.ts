@@ -1,22 +1,9 @@
 import {inject, service} from '@loopback/core';
 import {repository} from '@loopback/repository';
-import {
-  Request,
-  Response,
-  RestBindings,
-  get,
-  oas,
-  param,
-  post,
-  requestBody,
-} from '@loopback/rest';
-import path from 'path';
+import {Response, RestBindings, get, oas, param} from '@loopback/rest';
 import {promisify} from 'util';
-import {generalConfiguration} from '../config/general.config';
 
-import {authenticate} from '@loopback/authentication';
 import fs from 'fs';
-import {SecurityConfiguration} from '../config/security.config';
 import {PropertyRepository} from '../repositories';
 import {FileManagerService} from '../services/fileManager.service';
 const readdir = promisify(fs.readdir);
@@ -29,57 +16,10 @@ export class FileManagerController {
     protected propertyRepository: PropertyRepository,
   ) {}
 
-  @authenticate({
-    strategy: 'auth',
-    options: [
-      SecurityConfiguration.menus.menuRequestId,
-      SecurityConfiguration.actions.uploadAction,
-    ],
-  })
-  @post('/upload-request-contracts', {
-    responses: {
-      200: {
-        content: {
-          'application/json': {
-            schema: {
-              type: 'object',
-            },
-          },
-        },
-        description: 'file to upload',
-      },
-    },
-  })
-  async uploadContractFile(
-    @inject(RestBindings.Http.RESPONSE) response: Response,
-    @requestBody.file() request: Request,
-  ): Promise<object | false> {
-    const filePath = path.join(
-      __dirname,
-      generalConfiguration.requestContractsFolder,
-    );
-
-    let res = await this.fileManagerServcie.StoreFileToPath(
-      filePath,
-      generalConfiguration.propertyPicturePath,
-      request,
-      response,
-      generalConfiguration.contractExtensions,
-    );
-    if (res) {
-      const filename = response.req?.file?.filename;
-      if (filename) {
-        return {file: filename};
-      }
-    }
-    return res;
-  }
-
   @get('/files/{type}', {
     responses: {
       200: {
         content: {
-          // string[]
           'application/json': {
             schema: {
               type: 'array',

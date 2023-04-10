@@ -1,9 +1,20 @@
 import {authenticate} from '@loopback/authentication';
-import {service} from '@loopback/core';
+import {inject, service} from '@loopback/core';
 import {Filter, repository} from '@loopback/repository';
-import {HttpErrors, get, getModelSchemaRef, param, patch} from '@loopback/rest';
+import {
+  HttpErrors,
+  Request,
+  RestBindings,
+  get,
+  getModelSchemaRef,
+  param,
+  patch,
+  post,
+  requestBody,
+} from '@loopback/rest';
+import {Response} from 'express-serve-static-core';
 import {SecurityConfiguration} from '../config/security.config';
-import {Request} from '../models';
+import {Request as RequestModel} from '../models';
 import {AdvisorRepository} from '../repositories';
 import {AdvisorRequestService} from '../services/advisor-request.service';
 
@@ -28,7 +39,7 @@ export class AdvisorRequestController {
         description: 'Array of Advisor has many Request',
         content: {
           'application/json': {
-            schema: {type: 'array', items: getModelSchemaRef(Request)},
+            schema: {type: 'array', items: getModelSchemaRef(RequestModel)},
           },
         },
       },
@@ -36,8 +47,8 @@ export class AdvisorRequestController {
   })
   async find(
     @param.path.number('id') id: number,
-    @param.query.object('filter') filter?: Filter<Request>,
-  ): Promise<Request[]> {
+    @param.query.object('filter') filter?: Filter<RequestModel>,
+  ): Promise<RequestModel[]> {
     return this.advisorRepository.requests(id).find(filter);
   }
 
@@ -54,7 +65,9 @@ export class AdvisorRequestController {
       responses: {
         '200': {
           description: 'Update Request status',
-          content: {'application/json': {schema: getModelSchemaRef(Request)}},
+          content: {
+            'application/json': {schema: getModelSchemaRef(RequestModel)},
+          },
         },
       },
     },
@@ -63,7 +76,7 @@ export class AdvisorRequestController {
     @param.path.number('advisorId') advisorId: number,
     @param.path.number('requestId') requestId: number,
     @param.path.number('statusId') statusId: number,
-  ): Promise<Request> {
+  ): Promise<RequestModel> {
     try {
       const request = await this.advisorRequestService.changeRequestSatus(
         advisorId,
@@ -74,6 +87,46 @@ export class AdvisorRequestController {
         throw new HttpErrors[400]('No se ha hecho la actualización');
       }
       return request;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @authenticate({
+    strategy: 'auth',
+    options: [
+      SecurityConfiguration.menus.menuPropertyId,
+      SecurityConfiguration.actions.uploadAction,
+    ],
+  })
+  @post('/advisors/{advisorId}/upload-contract/{requestId}', {
+    responses: {
+      200: {
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+            },
+          },
+        },
+        description: 'file to upload',
+      },
+    },
+  })
+  async uploadContractByAdvisor(
+    @param.path.number('advisorId') advisorId: number,
+    @param.path.number('requestId') requestId: number,
+    @inject(RestBindings.Http.RESPONSE) response: Response,
+    @requestBody.file() request: Request,
+  ): Promise<object | false> {
+    try {
+      let res = await this.advisorRequestService.uploadContractByAdvisor(
+        request,
+        response,
+        advisorId,
+        requestId,
+      );
+      return res;
     } catch (error) {
       throw error;
     }

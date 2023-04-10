@@ -2,13 +2,17 @@ import {BindingScope, injectable} from '@loopback/context';
 import {service} from '@loopback/core';
 import {repository} from '@loopback/repository';
 import {HttpErrors} from '@loopback/rest';
+import {Request, Response} from 'express-serve-static-core';
+import path from 'path';
+import {generalConfiguration} from '../config/general.config';
 import {configurationNotification} from '../config/notification.config';
-import {Customer, Request} from '../models';
+import {Customer, Request as RequestModel} from '../models';
 import {
   CustomerRepository,
   RequestRepository,
   RequestStatusRepository,
 } from '../repositories';
+import {FileManagerService} from './fileManager.service';
 import {NotificationService} from './notification.service';
 
 @injectable({scope: BindingScope.TRANSIENT})
@@ -22,13 +26,15 @@ export class AdvisorRequestService {
     private customerRepository: CustomerRepository,
     @service(NotificationService)
     private notificationService: NotificationService,
+    @service(FileManagerService)
+    protected fileManagerServcie: FileManagerService,
   ) {}
 
   public async changeRequestSatus(
     advisorId: number,
     requestId: number,
     newStatusId: number,
-  ): Promise<Request | null> {
+  ): Promise<RequestModel | null> {
     const oldRequest = await this.requestRepository.findOne({
       where: {id: requestId, advisorId: advisorId},
     });
@@ -171,7 +177,8 @@ export class AdvisorRequestService {
       newStatusId == 7 ||
       newStatusId == 12
     ) {
-      let contentEmail = `El estado de su solicitud a cambiado de ${oldStatus.statusName} a ${newStatus.statusName}`;
+      let contentEmail = `<bold>El estado de su solicitud a cambiado de ${oldStatus.statusName} a ${newStatus.statusName}</bold>`;
+
       if (newStatusId == 2) {
         contentEmail = `${contentEmail} Su solicitud se encuentra desde este momento en estudio, estaremos en contacto con usted.`;
       }
@@ -202,6 +209,47 @@ export class AdvisorRequestService {
     await this.requestRepository.update(oldRequest);
 
     return await this.requestRepository.findById(requestId);
+  }
+
+  public async uploadContractByAdvisor(
+    request: Request,
+    response: Response,
+    advisorId: number,
+    requestId: number,
+  ): Promise<object | false> {
+    const filePath = path.join(
+      __dirname,
+      generalConfiguration.requestContractsFolder,
+    );
+
+    const advisorRequest = await this.requestRepository.findOne({
+      where: {id: requestId, advisorId: advisorId},
+    });
+
+    if (!advisorRequest) {
+      throw new HttpErrors[400]('No se encontró la solicitud.');
+    }
+
+    let res = await this.fileManagerServcie.StoreFileToPath(
+      filePath,
+      generalConfiguration.requestContractPath,
+      request,
+      response,
+      generalConfiguration.contractExtensions,
+    );
+    if (res) {
+      const filename = response.req?.file?.filename;
+      if (filename) {
+        advisorRequest.contractSource = filename;
+
+        this.requestRepository.update(advisorRequest, {
+          where: {advisorId: advisorId},
+        });
+
+        return {file: filename};
+      }
+    }
+    return res;
   }
 
   private async notifyCustomer(
