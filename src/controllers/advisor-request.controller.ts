@@ -57,13 +57,13 @@ export class AdvisorRequestController {
     return this.advisorRepository.requests(id).find(filter);
   }
 
-  // @authenticate({
-  //   strategy: 'auth',
-  //   options: [
-  //     SecurityConfiguration.menus.menuRequestId,
-  //     SecurityConfiguration.actions.downloadAction,
-  //   ],
-  // })
+  @authenticate({
+    strategy: 'auth',
+    options: [
+      SecurityConfiguration.menus.menuRequestId,
+      SecurityConfiguration.actions.downloadAction,
+    ],
+  })
   @get('/advisors/{advisorId}/download-request-contract/{requestId}')
   @oas.response.file()
   async downloadFileByName(

@@ -149,6 +149,12 @@ export class AdvisorRequestService {
       );
     }
 
+    if (newStatusId == 7 && oldRequest.contractSource == null) {
+      throw new HttpErrors[400](
+        `No puede cambiar el estado a pendiente por contrato si no existe un contrato cargado`,
+      );
+    }
+
     const customer = await this.customerRepository.findById(
       oldRequest.customerId,
     );
