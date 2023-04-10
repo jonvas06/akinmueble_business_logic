@@ -267,4 +267,19 @@ export class AdvisorRequestService {
     const url = configurationNotification.urlNotification2fa;
     this.notificationService.SendNotification(data, url);
   }
+
+  public async findRequestByIdAndAdvisorId(
+    requestId: number,
+    advisorId: number,
+  ) {
+    const oldRequest = await this.requestRepository.findOne({
+      where: {id: requestId, advisorId: advisorId},
+    });
+
+    if (!oldRequest) {
+      throw new HttpErrors[400]('No se encontró la solicitud');
+    }
+
+    return oldRequest;
+  }
 }

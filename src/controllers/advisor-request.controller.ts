@@ -4,9 +4,11 @@ import {Filter, repository} from '@loopback/repository';
 import {
   HttpErrors,
   Request,
+  Response as ResponseRes,
   RestBindings,
   get,
   getModelSchemaRef,
+  oas,
   param,
   patch,
   post,
@@ -17,6 +19,7 @@ import {SecurityConfiguration} from '../config/security.config';
 import {Request as RequestModel} from '../models';
 import {AdvisorRepository} from '../repositories';
 import {AdvisorRequestService} from '../services/advisor-request.service';
+import {FileManagerService} from '../services/fileManager.service';
 
 export class AdvisorRequestController {
   constructor(
@@ -24,6 +27,8 @@ export class AdvisorRequestController {
     protected advisorRepository: AdvisorRepository,
     @service(AdvisorRequestService)
     private advisorRequestService: AdvisorRequestService,
+    @service(FileManagerService)
+    protected fileManagerServcie: FileManagerService,
   ) {}
 
   @authenticate({
@@ -52,6 +57,37 @@ export class AdvisorRequestController {
     return this.advisorRepository.requests(id).find(filter);
   }
 
+  // @authenticate({
+  //   strategy: 'auth',
+  //   options: [
+  //     SecurityConfiguration.menus.menuRequestId,
+  //     SecurityConfiguration.actions.downloadAction,
+  //   ],
+  // })
+  @get('/advisors/{advisorId}/download-request-contract/{requestId}')
+  @oas.response.file()
+  async downloadFileByName(
+    @param.path.number('advisorId') advisorId: number,
+    @param.path.string('requestId') requestId: number,
+    @inject(RestBindings.Http.RESPONSE) response: ResponseRes,
+  ) {
+    const folder = this.fileManagerServcie.getFileByType(2);
+    const request =
+      await this.advisorRequestService.findRequestByIdAndAdvisorId(
+        requestId,
+        advisorId,
+      );
+    if (!request.contractSource) {
+      throw new HttpErrors[400](
+        'No se encontró ningún contrato para descargar',
+      );
+    }
+    const fileName = request.contractSource;
+    const file = this.fileManagerServcie.validateFileName(folder, fileName);
+
+    response.download(file, fileName);
+    return response;
+  }
   @authenticate({
     strategy: 'auth',
     options: [
