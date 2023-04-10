@@ -71,7 +71,7 @@ export class AdvisorRequestController {
         statusId,
       );
       if (!request) {
-        throw new HttpErrors[400]('');
+        throw new HttpErrors[400]('No se ha hecho la actualización');
       }
       return request;
     } catch (error) {
