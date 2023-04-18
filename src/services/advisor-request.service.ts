@@ -1,6 +1,6 @@
 import {BindingScope, injectable} from '@loopback/context';
 import {service} from '@loopback/core';
-import {repository} from '@loopback/repository';
+import {Where, repository} from '@loopback/repository';
 import {HttpErrors} from '@loopback/rest';
 import {Request, Response} from 'express-serve-static-core';
 import path from 'path';
@@ -9,6 +9,7 @@ import {configurationNotification} from '../config/notification.config';
 import {Customer, Request as RequestModel} from '../models';
 import {
   CustomerRepository,
+  PropertyRepository,
   RequestRepository,
   RequestStatusRepository,
 } from '../repositories';
@@ -28,6 +29,8 @@ export class AdvisorRequestService {
     private notificationService: NotificationService,
     @service(FileManagerService)
     protected fileManagerServcie: FileManagerService,
+    @repository(PropertyRepository)
+    private propertyRepository: PropertyRepository,
   ) {}
 
   public async changeRequestSatus(
@@ -175,6 +178,8 @@ export class AdvisorRequestService {
       );
     }
 
+    let contentEmail = '';
+
     if (
       newStatusId == 2 ||
       newStatusId == 3 ||
@@ -183,7 +188,7 @@ export class AdvisorRequestService {
       newStatusId == 7 ||
       newStatusId == 12
     ) {
-      let contentEmail = `<bold>El estado de su solicitud a cambiado de ${oldStatus.statusName} a ${newStatus.statusName}</bold>`;
+      contentEmail = `<bold>El estado de su solicitud a cambiado de ${oldStatus.statusName} a ${newStatus.statusName}</bold>`;
 
       if (newStatusId == 2) {
         contentEmail = `${contentEmail} Su solicitud se encuentra desde este momento en estudio, estaremos en contacto con usted.`;
@@ -192,12 +197,52 @@ export class AdvisorRequestService {
         contentEmail = `${contentEmail} Su solicitud se ha estudiado y se ha determinado que requiere un codeudor,
         el asesor se contactará con usted en un plazo máximo de tres días hábiles para darle las indicaciones.`;
       }
+
+      const property = await this.propertyRepository.findById(
+        oldRequest.propertyId,
+        {include: [{relation: 'requests'}]},
+      );
+
       if (newStatusId == 4) {
         contentEmail = `${contentEmail} Felicitaciones, su solicitud ha sido aceptada`;
+        const filter: Where<RequestModel> = {id: {neq: oldRequest.id}};
+        this.changeAllRequestsStatesThroughOneProperty(
+          12,
+          property.id!,
+          filter,
+        );
+
+        const propertyRequests = property.requests;
+        const customers = await this.getRejectedCustomers(
+          propertyRequests,
+          oldRequest.id!,
+        );
+
+        let rejectEmailContent =
+          'Su solicitud ha sido rechazada debido a que ya fue aceptada otra solicitud para el mismo inmueble';
+        this.notifyManyCustomers(customers, rejectEmailContent);
       }
+
       if (newStatusId == 5) {
         contentEmail = `${contentEmail} Felicitaciones, su solicitud ha sido aceptada`;
+        const filter: Where<RequestModel> = {id: {neq: oldRequest.id}};
+        this.changeAllRequestsStatesThroughOneProperty(
+          12,
+          property.id!,
+          filter,
+        );
+
+        const propertyRequests = property.requests;
+        const customers = await this.getRejectedCustomers(
+          propertyRequests,
+          oldRequest.id!,
+        );
+
+        let rejectEmailContent =
+          'Su solicitud ha sido rechazada debido a que ya fue aceptada otra solicitud para el mismo inmueble';
+        this.notifyManyCustomers(customers, rejectEmailContent);
       }
+
       if (newStatusId == 7) {
         contentEmail = `${contentEmail} Hemos subido el contrato,
         por favor ingrese a akinmueble.com, inicie sesión, descargue el contrato
@@ -206,13 +251,16 @@ export class AdvisorRequestService {
       if (newStatusId == 12) {
         contentEmail = `${contentEmail} Su solicitud ha sido rechazada`;
       }
-
-      await this.notifyCustomer(customer, newStatus.statusName, contentEmail);
     }
 
     oldRequest.requestStatusId = newStatusId;
 
     await this.requestRepository.update(oldRequest);
+
+    //TODO
+    //Acá es donde deberiamos notificar
+    //verificar si hay algo para notificar
+    await this.notifyOneCustomer(customer, contentEmail);
 
     return await this.requestRepository.findById(requestId);
   }
@@ -258,14 +306,30 @@ export class AdvisorRequestService {
     return res;
   }
 
-  private async notifyCustomer(
-    customer: Customer,
-    statusName: string,
-    content: string,
-  ) {
+  private async notifyManyCustomers(customers: Customer[], content: string) {
+    const url = configurationNotification.urlNotification2fa;
+    customers.forEach(customer => {
+      let data = {
+        destinationEmail: customer.email,
+        destinationName:
+          customer.firstName + ' ' + customer.secondName
+            ? customer.secondName
+            : '' + '' + customer.firstLastName,
+        contectEmail: `${content}`,
+        subjectEmail: configurationNotification.subjectCustomerNotification,
+      };
+
+      this.notificationService.SendNotification(data, url);
+    });
+  }
+
+  private async notifyOneCustomer(customer: Customer, content: string) {
     let data = {
       destinationEmail: customer.email,
-      destinationName: customer.firstName + ' ' + customer.secondName,
+      destinationName:
+        customer.firstName + ' ' + customer.secondName
+          ? customer.secondName
+          : '' + '' + customer.firstLastName,
       contectEmail: `${content}`,
       subjectEmail: configurationNotification.subjectCustomerNotification,
     };
@@ -287,5 +351,39 @@ export class AdvisorRequestService {
     }
 
     return oldRequest;
+  }
+
+  private async getRejectedCustomers(
+    requests: RequestModel[],
+    requestId: number,
+  ): Promise<Customer[]> {
+    const customers = await Promise.all(
+      requests.map(async request => {
+        if (request.id !== requestId) {
+          let customer = await this.customerRepository.findOne({
+            where: {id: request.customerId},
+          });
+          if (customer) {
+            return customer;
+          }
+        }
+      }),
+    );
+
+    const notUndefinedCustomers = customers.filter(
+      customer => customer !== undefined,
+    ) as Customer[];
+
+    return notUndefinedCustomers;
+  }
+
+  private async changeAllRequestsStatesThroughOneProperty(
+    newRequestStatusId: number,
+    propertyId: number,
+    filter: Where,
+  ) {
+    await this.propertyRepository
+      .requests(propertyId)
+      .patch({requestStatusId: newRequestStatusId}, filter);
   }
 }
