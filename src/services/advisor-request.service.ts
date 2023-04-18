@@ -205,7 +205,6 @@ export class AdvisorRequestService {
 
       if (newStatusId == 4) {
         contentEmail = `${contentEmail} Felicitaciones, su solicitud ha sido aceptada`;
-        //TODO
         const filter: Where<RequestModel> = {id: {neq: oldRequest.id}};
         this.changeAllRequestsStatesThroughOneProperty(
           12,
@@ -226,7 +225,6 @@ export class AdvisorRequestService {
 
       if (newStatusId == 5) {
         contentEmail = `${contentEmail} Felicitaciones, su solicitud ha sido aceptada`;
-        //TODO
         const filter: Where<RequestModel> = {id: {neq: oldRequest.id}};
         this.changeAllRequestsStatesThroughOneProperty(
           12,
