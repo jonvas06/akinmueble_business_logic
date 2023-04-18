@@ -214,7 +214,7 @@ export class AdvisorRequestService {
         );
 
         const propertyRequests = property.requests;
-        const customers = await this.getCustomersRejected(
+        const customers = await this.getRejectedCustomers(
           propertyRequests,
           oldRequest.id!,
         );
@@ -235,7 +235,7 @@ export class AdvisorRequestService {
         );
 
         const propertyRequests = property.requests;
-        const customers = await this.getCustomersRejected(
+        const customers = await this.getRejectedCustomers(
           propertyRequests,
           oldRequest.id!,
         );
@@ -308,23 +308,6 @@ export class AdvisorRequestService {
     return res;
   }
 
-  // private async notifyCustomer(customers: Customer[], content: string) {
-  //   customers.forEach(customer => {
-  //     let data = {
-  //       destinationEmail: customer.email,
-  //       destinationName:
-  //         customer.firstName + ' ' + customer.secondName
-  //           ? customer.secondName
-  //           : '' + '' + customer.firstLastName,
-  //       contectEmail: `${content}`,
-  //       subjectEmail: configurationNotification.subjectCustomerNotification,
-  //     };
-
-  //     const url = configurationNotification.urlNotification2fa;
-  //     this.notificationService.SendNotification(data, url);
-  //   });
-  // }
-
   private async notifyManyCustomers(customers: Customer[], content: string) {
     const url = configurationNotification.urlNotification2fa;
     customers.forEach(customer => {
@@ -372,7 +355,7 @@ export class AdvisorRequestService {
     return oldRequest;
   }
 
-  private async getCustomersRejected(
+  private async getRejectedCustomers(
     requests: RequestModel[],
     requestId: number,
   ): Promise<Customer[]> {
