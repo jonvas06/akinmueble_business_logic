@@ -60,7 +60,6 @@ export class WebSiteController {
         contectEmail : message
       };
       const send = this.SendNotification.SendNotification(datacontact, configurationNotification.urlNotification2fa)
-      console.log(send);
       if (!send) {
         throw new HttpErrors[400]("El formulario no se pudo enviar");
       }
