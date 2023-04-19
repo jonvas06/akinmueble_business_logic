@@ -37,7 +37,7 @@ export class AdvisorRequestService {
     advisorId: number,
     requestId: number,
     newStatusId: number,
-    commentary: Report | undefined,
+    report: Report | undefined,
   ): Promise<RequestModel | null> {
     const oldRequest = await this.requestRepository.findOne({
       where: {id: requestId, advisorId: advisorId},
@@ -207,7 +207,7 @@ export class AdvisorRequestService {
       );
 
       if (newStatusId == 4) {
-        if (!commentary) {
+        if (!report) {
           throw new HttpErrors[400](
             'Es necesario que hagas un comentario acerca del cambio del estado de la solicitud para que el cliente pueda revisarolo en los reportes',
           );
@@ -220,7 +220,7 @@ export class AdvisorRequestService {
           filter,
         );
 
-        this.requestRepository.reports(oldRequest.id).create(commentary);
+        this.requestRepository.reports(oldRequest.id).create(report);
 
         const propertyRequests = property.requests;
         const customers = await this.getRejectedCustomers(
@@ -234,7 +234,7 @@ export class AdvisorRequestService {
       }
 
       if (newStatusId == 5) {
-        if (!commentary) {
+        if (!report) {
           throw new HttpErrors[400](
             'Es necesario que hagas un comentario acerca del cambio del estado de la solicitud para que el cliente pueda revisarolo en los reportes',
           );
@@ -247,7 +247,7 @@ export class AdvisorRequestService {
           filter,
         );
 
-        this.requestRepository.reports(oldRequest.id).create(commentary);
+        this.requestRepository.reports(oldRequest.id).create(report);
 
         const propertyRequests = property.requests;
         const customers = await this.getRejectedCustomers(
@@ -267,18 +267,20 @@ export class AdvisorRequestService {
       }
 
       if (newStatusId == 12) {
-        if (!commentary) {
+        if (!report) {
           throw new HttpErrors[400](
             'Es necesario que hagas un comentario acerca del cambio del estado de la solicitud para que el cliente pueda revisarolo en los reportes',
           );
         }
         contentEmail = `${contentEmail} Su solicitud ha sido rechazada\n
-        Comentarios del asesor: ${commentary.commentary}`;
+        Comentarios del asesor: ${report.commentary}`;
+
+        this.requestRepository.reports(oldRequest.id).create(report);
       }
     }
 
     if (newStatusId == 8 || newStatusId == 9) {
-      if (!commentary) {
+      if (!report) {
         throw new HttpErrors[400](
           'Es necesario que hagas un comentario acerca del cambio del estado de la solicitud para que el cliente pueda revisarolo en los reportes',
         );
@@ -286,13 +288,13 @@ export class AdvisorRequestService {
 
       if (newStatusId == 8) {
         contentEmail = `${contentEmail} Su solicitud ha sido abortada ya que usted se lo ha solicitado al asesor.\n
-        Comentarios del asesor: ${commentary.commentary}`;
+        Comentarios del asesor: ${report.commentary}`;
       } else if (newStatusId == 9) {
         contentEmail = `${contentEmail} Su solicitud ha sido rechazada\n
-        Comentarios del asesor: ${commentary.commentary}`;
+        Comentarios del asesor: ${report.commentary}`;
       }
 
-      this.requestRepository.reports(oldRequest.id).create(commentary);
+      this.requestRepository.reports(oldRequest.id).create(report);
     }
 
     oldRequest.requestStatusId = newStatusId;

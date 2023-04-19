@@ -122,14 +122,14 @@ export class AdvisorRequestController {
         },
       },
     })
-    commentary?: Report,
+    report?: Report,
   ): Promise<RequestModel> {
     try {
       const request = await this.advisorRequestService.changeRequestSatus(
         advisorId,
         requestId,
         statusId,
-        commentary,
+        report,
       );
       if (!request) {
         throw new HttpErrors[400]('No se ha hecho la actualización');
