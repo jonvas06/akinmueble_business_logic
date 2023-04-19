@@ -209,7 +209,7 @@ export class AdvisorRequestService {
       if (newStatusId == 4) {
         if (!report) {
           throw new HttpErrors[400](
-            'Es necesario que hagas un comentario acerca del cambio del estado de la solicitud para que el cliente pueda revisarolo en los reportes',
+            'Es necesario que hagas un comentario acerca del cambio del estado de la solicitud para que el cliente pueda revisarlo en los reportes',
           );
         }
         contentEmail = `${contentEmail} Felicitaciones, su solicitud ha sido aceptada. Puede revisar los comentarios en la solicitud hechos por el asesor dirigiendose al sistema.`;
@@ -236,7 +236,7 @@ export class AdvisorRequestService {
       if (newStatusId == 5) {
         if (!report) {
           throw new HttpErrors[400](
-            'Es necesario que hagas un comentario acerca del cambio del estado de la solicitud para que el cliente pueda revisarolo en los reportes',
+            'Es necesario que hagas un comentario acerca del cambio del estado de la solicitud para que el cliente pueda revisarlo en los reportes',
           );
         }
         contentEmail = `${contentEmail} Felicitaciones, su solicitud ha sido aceptada. Puede revisar los comentarios en la solicitud hechos por el asesor dirigiendose al sistema.`;
@@ -269,7 +269,7 @@ export class AdvisorRequestService {
       if (newStatusId == 12) {
         if (!report) {
           throw new HttpErrors[400](
-            'Es necesario que hagas un comentario acerca del cambio del estado de la solicitud para que el cliente pueda revisarolo en los reportes',
+            'Es necesario que hagas un comentario acerca del cambio del estado de la solicitud para que el cliente pueda revisarlo en los reportes',
           );
         }
         contentEmail = `${contentEmail} Su solicitud ha sido rechazada\n
@@ -282,7 +282,7 @@ export class AdvisorRequestService {
     if (newStatusId == 8 || newStatusId == 9) {
       if (!report) {
         throw new HttpErrors[400](
-          'Es necesario que hagas un comentario acerca del cambio del estado de la solicitud para que el cliente pueda revisarolo en los reportes',
+          'Es necesario que hagas un comentario acerca del cambio del estado de la solicitud para que el cliente pueda revisarlo en los reportes',
         );
       }
 
