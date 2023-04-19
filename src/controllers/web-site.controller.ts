@@ -52,8 +52,6 @@ export class WebSiteController {
 
       Texto del mensaje: ${data.message}
 
-      Cordial despedida,
-      Equipo uno :).
       `;
       const datacontact = {
         destinationEmail : emailContactAdmin,
@@ -63,7 +61,12 @@ export class WebSiteController {
       };
       const send = this.SendNotification.SendNotification(datacontact, configurationNotification.urlNotification2fa)
       console.log(send);
-      return send;
+      if (!send) {
+        throw new HttpErrors[400]("El formulario no se pudo enviar");
+      }
+      else{
+        return send;
+      }
     }catch{
       throw new HttpErrors[500]("Error del servidor para enviar el mensaje");
     }

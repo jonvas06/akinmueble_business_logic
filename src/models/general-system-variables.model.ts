@@ -10,11 +10,6 @@ export class GeneralSystemVariables extends Entity {
   id?: number;
 
   @property({
-    type: 'number',
-  })
-  purchasePercentage?: number;
-
-  @property({
     type: 'string',
     required: true,
   })
