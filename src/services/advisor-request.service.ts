@@ -267,7 +267,13 @@ export class AdvisorRequestService {
       }
 
       if (newStatusId == 12) {
-        contentEmail = `${contentEmail} Su solicitud ha sido rechazada`;
+        if (!commentary) {
+          throw new HttpErrors[400](
+            'Es necesario que hagas un comentario acerca del cambio del estado de la solicitud para que el cliente pueda revisarolo en los reportes',
+          );
+        }
+        contentEmail = `${contentEmail} Su solicitud ha sido rechazada\n
+        Comentarios del asesor: ${commentary.commentary}`;
       }
     }
 
