@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/naming-convention */
 import {BindingScope, injectable} from '@loopback/core';
 const fetch = require('node-fetch');
 
@@ -12,4 +14,6 @@ export class NotificationService {
       headers: {'Content-type': 'application/json'},
     });
   }
+
+  
 }

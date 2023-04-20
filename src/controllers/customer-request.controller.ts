@@ -10,6 +10,7 @@ import {
   get,
   getModelSchemaRef,
   getWhereSchemaFor,
+  HttpErrors,
   param,
   patch,
   post,
@@ -20,10 +21,13 @@ import {
   Request,
 } from '../models';
 import {CustomerRepository} from '../repositories';
+import {CustomerRequestService} from '../services/customer-request.service';
+import {service} from '@loopback/core';
 
 export class CustomerRequestController {
   constructor(
     @repository(CustomerRepository) protected customerRepository: CustomerRepository,
+    @service(CustomerRequestService) private customerRequestService: CustomerRequestService
   ) { }
 
   @get('/customers/{id}/requests', {
@@ -67,7 +71,12 @@ export class CustomerRequestController {
       },
     }) request: Omit<Request, 'id'>,
   ): Promise<Request> {
+    if (!id) {
+      throw HttpErrors[400]("")
+    }
+    await this.customerRequestService.notifyAdvisor(id)
     return this.customerRepository.requests(id).create(request);
+    
   }
 
   @patch('/customers/{id}/requests', {
