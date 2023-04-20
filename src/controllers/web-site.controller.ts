@@ -1,23 +1,19 @@
+/* eslint-disable @typescript-eslint/no-misused-promises */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-shadow */
 /* eslint-disable @typescript-eslint/naming-convention */
-// Uncomment these imports to begin using these cool features!
 
 import {service} from '@loopback/core';
-import {repository} from '@loopback/repository';
 import {HttpErrors, getModelSchemaRef, post, requestBody, response} from '@loopback/rest';
-import {configurationNotification} from '../config/notification.config';
-import {FormContact, GeneralSystemVariables} from '../models';
-import {GeneralSystemVariablesRepository} from '../repositories';
-import {NotificationService} from '../services/notification.service';
-
-// import {inject} from '@loopback/core';
+import {FormContact} from '../models';
+import {WebSiteService} from '../services';
 
 
 export class WebSiteController {
   constructor(
-    @repository(GeneralSystemVariablesRepository)
-    private VariablesRepository: GeneralSystemVariablesRepository,
-    @service(NotificationService)
-    private SendNotification: NotificationService
+    @service(WebSiteService)
+    private WebSiteService: WebSiteService
+
   ) {}
 
   @post('/send-message-form-contact')
@@ -25,7 +21,7 @@ export class WebSiteController {
     description: 'Enviar mensaje del forumulario de contacto',
     content: {'application/json': {schema: getModelSchemaRef(FormContact)}},
   })
-  async ValidateUserPermissions(
+  async SendContactForm(
     @requestBody({
       content: {
         'application/json': {
@@ -35,39 +31,18 @@ export class WebSiteController {
     })
     data: FormContact,
   ): Promise<boolean | undefined> {
+    const send = this.WebSiteService.sendForm(data);
     try {
-      const variables: GeneralSystemVariables[] =await this.VariablesRepository.find();
-      if ((variables).length === 0){
-        throw new HttpErrors[500]("No hay variables del sistema para realizar el proceso");
-      }
-      const emailContactAdmin = variables[0].emailContactAdmin;
-      const nameContactAdmin = variables[0].nameContactAdmin;
-      const subjectEmail = "Contacto desde sitio web";
-      const message = `Estimado ${nameContactAdmin}, se ha enviado un mensaje desde el sitio web con la siguiente informacíon:
-
-      Nombre: ${data.name}
-      Correo: ${data.email}
-      Celular: ${data.phone}
-      Tipo de Mensaje: ${data.typeMessage}
-
-      Texto del mensaje: ${data.message}
-
-      `;
-      const datacontact = {
-        destinationEmail : emailContactAdmin,
-        destinationName : nameContactAdmin,
-        subjectEmail : subjectEmail,
-        contectEmail : message
-      };
-      const send = this.SendNotification.SendNotification(datacontact, configurationNotification.urlNotification2fa)
       if (!send) {
         throw new HttpErrors[400]("El formulario no se pudo enviar");
-      }
-      else{
-        return send;
+      }else{
+        return await send;
       }
     }catch{
       throw new HttpErrors[500]("Error del servidor para enviar el mensaje");
     }
   }
 }
+
+
+
