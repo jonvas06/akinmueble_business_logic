@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/return-await */
 import {
   Count,
   CountSchema,
@@ -69,14 +70,14 @@ export class CustomerRequestController {
           }),
         },
       },
-    }) request: Omit<Request, 'id'>,
+    })
+     request: Omit<Request,'id'>,
   ): Promise<Request> {
     if (!id) {
       throw HttpErrors[400]("")
     }
-    await this.customerRequestService.notifyAdvisor(id)
-    return this.customerRepository.requests(id).create(request);
-    
+
+    return await this.customerRequestService.notifyAdvisor(request)
   }
 
   @patch('/customers/{id}/requests', {
