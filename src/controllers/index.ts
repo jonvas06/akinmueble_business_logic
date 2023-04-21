@@ -46,3 +46,4 @@ export * from './request-status.controller';
 export * from './request-type-request.controller';
 export * from './request-type.controller';
 export * from './request.controller';
+export * from './web-site.controller';
