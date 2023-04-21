@@ -9,15 +9,12 @@ import {
   AdvisorRepository,
   CustomerRepository,
   PropertyRepository,
-  RequestRepository,
 } from '../repositories';
 import {NotificationService} from './notification.service';
 
 @injectable({scope: BindingScope.TRANSIENT})
 export class CustomerRequestService {
   constructor(
-    @repository(RequestRepository)
-    private requestRepository: RequestRepository,
     @repository(AdvisorRepository)
     private advisorRepository: AdvisorRepository,
     @repository(CustomerRepository)
@@ -27,16 +24,15 @@ export class CustomerRequestService {
     @repository(PropertyRepository)
     private propertyRepository: PropertyRepository,
   ) {}
-
   public async notifyAdvisor(request: Request): Promise<Request> {
-    const propertyRequest = await this.propertyRepository.findOne({
+    const property = await this.propertyRepository.findOne({
       where: {id: request.propertyId},
     });
-    if (!propertyRequest) {
+    if (!property) {
       throw HttpErrors[400]('');
     }
     const advisorProperty = await this.advisorRepository.findOne({
-      where: {id: propertyRequest.advisorId},
+      where: {id: property.advisorId},
     });
     if (!advisorProperty) {
       throw HttpErrors[400]('');
@@ -54,40 +50,10 @@ export class CustomerRequestService {
         advisorProperty.firstName + ' ' + advisorProperty.secondName
           ? advisorProperty.secondName
           : '' + '' + advisorProperty.firtsLastName,
-      contectEmail: `se ha hecho una solicitud a la propiedad con id ${propertyRequest.id}.}`,
+      contectEmail: `se ha hecho una solicitud a la propiedad con id ${property.id}.`,
       subjectEmail: configurationNotification.subjectCustomerNotification,
     };
     this.notificationService.SendNotification(data, url);
     return newRequest;
   }
-
-  /*
-
- public async notifyAdvisor(requestId: number) {
-    const propertyRequest = await this.requestRepository.findOne({
-      where: {propertyId: requestId},
-    });
-    if (!propertyRequest) {
-      throw HttpErrors[400]('');
-    }
-    const advisorProperty = await this.advisorRepository.findOne({
-      where: {id: propertyRequest.advisorId},
-    });
-    if (!advisorProperty) {
-      throw HttpErrors[400]('');
-    }
-    const url = configurationNotification.urlNotification2fa;
-    let data = {
-      destinationEmail: advisorProperty.email,
-      destinationName:
-        advisorProperty.firstName + ' ' + advisorProperty.secondName
-          ? advisorProperty.secondName
-          : '' + '' + advisorProperty.firtsLastName,
-      contectEmail: `se ha hecho una solicitud a la propiedad con id ${propertyRequest.id}. dicha solicitud es la #${requestId}`,
-      subjectEmail: configurationNotification.subjectCustomerNotification,
-    };
-
-    this.notificationService.SendNotification(data, url);
-  }
-*/
 }
