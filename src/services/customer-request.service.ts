@@ -59,14 +59,12 @@ export class CustomerRequestService {
         'un cliente no puede hacer mas de una solicitud a una misma propiedad, cuando ya cuenta con una activa',
       );
     }
-
     const newRequest = await this.customerRepository
       .requests(request.customerId)
       .create(request);
     this.notifyAdvisorEmail(advisorProperty, property);
     return newRequest;
   }
-
   /**
    *recibe el advisor y la proppiedad para notificar al advisor de esa propiedad
    * e indicarle el id de la propiedad que recibio la request
