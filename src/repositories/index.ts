@@ -14,3 +14,4 @@ export * from './report.repository';
 export * from './request-status.repository';
 export * from './request-type.repository';
 export * from './request.repository';
+export * from './general-system-variables.repository';
