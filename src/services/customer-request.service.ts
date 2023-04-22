@@ -10,7 +10,6 @@ import {
   RequestRepository,
 } from '../repositories';
 import {NotificationService} from './notification.service';
-import {randomInt} from 'crypto';
 
 @injectable({scope: BindingScope.TRANSIENT})
 export class CustomerRequestService {
@@ -28,6 +27,7 @@ export class CustomerRequestService {
     @service(NotificationService)
     private notificationService: NotificationService,
   ) {}
+
   /**
    * recibe la informacion de la request que se desea crear, en un shcema de request
    * @param request
@@ -48,16 +48,29 @@ export class CustomerRequestService {
     }
     request.requestStatusId = 1; //estado 1= estado enviado
     request.creationDate = new Date(Date.now());
-    let repetRequest = await this.requestRepository.findOne({
+    let repetRequest = await this.requestRepository.find({
       where: {
         customerId: request.customerId,
         propertyId: request.propertyId,
       },
     });
-    if (repetRequest && repetRequest.closeDate && (repetRequest.closeDate as Date).getTime > request.creationDate.getTime) {
-      throw HttpErrors[400](
-        'un cliente no puede hacer mas de una solicitud a una misma propiedad, cuando ya cuenta con una activa',
-      );
+    //se revisa que si haya llegado un array, y se recorre request por request para verificar que no tenga multiples solicitudes enviadas
+    if (repetRequest) {
+      repetRequest.forEach(element => {
+        if (!element.closeDate) {
+          throw HttpErrors[400](
+            'un cliente no puede hacer mas de una solicitud a una misma propiedad, cuando ya cuenta con una activa',
+          );
+        }
+        if (!request.creationDate) {
+          throw HttpErrors[400]('se ha generado un error al crear la fecha');
+        }
+        if (element.closeDate.getDate > request.creationDate.getDate) {
+          throw HttpErrors[400](
+            'un cliente no puede hacer mas de una solicitud a una misma propiedad, cuando ya cuenta con una activa',
+          );
+        }
+      });
     }
     const newRequest = await this.customerRepository
       .requests(request.customerId)
@@ -65,6 +78,7 @@ export class CustomerRequestService {
     this.notifyAdvisorEmail(advisorProperty, property);
     return newRequest;
   }
+
   /**
    *recibe el advisor y la proppiedad para notificar al advisor de esa propiedad
    * e indicarle el id de la propiedad que recibio la request
