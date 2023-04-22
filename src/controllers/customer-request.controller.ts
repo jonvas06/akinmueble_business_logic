@@ -1,10 +1,6 @@
-import {
-  Count,
-  CountSchema,
-  Filter,
-  repository,
-  Where,
-} from '@loopback/repository';
+import {authenticate} from '@loopback/authentication';
+import {service} from '@loopback/core';
+import {Count, CountSchema, repository, Where} from '@loopback/repository';
 import {
   del,
   get,
@@ -15,17 +11,26 @@ import {
   post,
   requestBody,
 } from '@loopback/rest';
-import {
-  Customer,
-  Request,
-} from '../models';
+import {SecurityConfiguration} from '../config/security.config';
+import {Customer, Request} from '../models';
 import {CustomerRepository} from '../repositories';
+import {CustomerRequestService} from '../services/customer-request.service';
 
 export class CustomerRequestController {
   constructor(
-    @repository(CustomerRepository) protected customerRepository: CustomerRepository,
-  ) { }
+    @repository(CustomerRepository)
+    protected customerRepository: CustomerRepository,
+    @service(CustomerRequestService)
+    protected customerRequestService: CustomerRequestService,
+  ) {}
 
+  @authenticate({
+    strategy: 'auth',
+    options: [
+      SecurityConfiguration.menus.menuRequestId,
+      SecurityConfiguration.actions.listAction,
+    ],
+  })
   @get('/customers/{id}/requests', {
     responses: {
       '200': {
@@ -40,9 +45,13 @@ export class CustomerRequestController {
   })
   async find(
     @param.path.number('id') id: number,
-    @param.query.object('filter') filter?: Filter<Request>,
+    // @param.query.object('filter') filter?: Filter<Request>,
   ): Promise<Request[]> {
-    return this.customerRepository.requests(id).find(filter);
+    try {
+      return await this.customerRequestService.getRequestsByCustomer(id);
+    } catch (error) {
+      throw error;
+    }
   }
 
   @post('/customers/{id}/requests', {
@@ -61,11 +70,12 @@ export class CustomerRequestController {
           schema: getModelSchemaRef(Request, {
             title: 'NewRequestInCustomer',
             exclude: ['id'],
-            optional: ['customerId']
+            optional: ['customerId'],
           }),
         },
       },
-    }) request: Omit<Request, 'id'>,
+    })
+    request: Omit<Request, 'id'>,
   ): Promise<Request> {
     return this.customerRepository.requests(id).create(request);
   }
@@ -88,7 +98,8 @@ export class CustomerRequestController {
       },
     })
     request: Partial<Request>,
-    @param.query.object('where', getWhereSchemaFor(Request)) where?: Where<Request>,
+    @param.query.object('where', getWhereSchemaFor(Request))
+    where?: Where<Request>,
   ): Promise<Count> {
     return this.customerRepository.requests(id).patch(request, where);
   }
@@ -103,7 +114,8 @@ export class CustomerRequestController {
   })
   async delete(
     @param.path.number('id') id: number,
-    @param.query.object('where', getWhereSchemaFor(Request)) where?: Where<Request>,
+    @param.query.object('where', getWhereSchemaFor(Request))
+    where?: Where<Request>,
   ): Promise<Count> {
     return this.customerRepository.requests(id).delete(where);
   }
