@@ -32,13 +32,13 @@ export class CustomerRequestService {
       where: {id: request.propertyId},
     });
     if (!property) {
-      throw HttpErrors[400]('');
+      throw HttpErrors[400]('no se encuentra la propiedad');
     }
     const advisorProperty = await this.advisorRepository.findOne({
       where: {id: property.advisorId},
     });
     if (!advisorProperty) {
-      throw HttpErrors[400]('');
+      throw HttpErrors[400]('no se encontro el asesor');
     }
     //crear code request
     request.requestStatusId = 1;
