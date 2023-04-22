@@ -19,6 +19,8 @@ import {Customer, Request} from '../models';
 import {CustomerRepository} from '../repositories';
 import {CustomerRequestService} from '../services/customer-request.service';
 import {service} from '@loopback/core';
+import {authenticate} from '@loopback/authentication';
+import {SecurityConfiguration} from '../config/security.config';
 
 export class CustomerRequestController {
   constructor(
@@ -47,6 +49,13 @@ export class CustomerRequestController {
     return this.customerRepository.requests(id).find(filter);
   }
 
+  @authenticate({
+    strategy: 'auth',
+    options: [
+      SecurityConfiguration.menus.menuRequestId,
+      SecurityConfiguration.actions.createAction,
+    ],
+  })
   @post('/customers/{id}/requests', {
     responses: {
       '200': {
@@ -100,7 +109,6 @@ export class CustomerRequestController {
   ): Promise<Count> {
     return this.customerRepository.requests(id).patch(request, where);
   }
-
   @del('/customers/{id}/requests', {
     responses: {
       '200': {

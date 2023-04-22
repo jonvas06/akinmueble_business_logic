@@ -7,20 +7,26 @@ import {
   AdvisorRepository,
   CustomerRepository,
   PropertyRepository,
+  RequestRepository,
 } from '../repositories';
 import {NotificationService} from './notification.service';
+import {randomInt} from 'crypto';
 
 @injectable({scope: BindingScope.TRANSIENT})
 export class CustomerRequestService {
   constructor(
+    //********repositorys**********
     @repository(AdvisorRepository)
     private advisorRepository: AdvisorRepository,
     @repository(CustomerRepository)
     private customerRepository: CustomerRepository,
-    @service(NotificationService)
-    private notificationService: NotificationService,
     @repository(PropertyRepository)
     private propertyRepository: PropertyRepository,
+    @repository(RequestRepository)
+    private requestRepository: RequestRepository,
+    //********service**********
+    @service(NotificationService)
+    private notificationService: NotificationService,
   ) {}
   /**
    * recibe la informacion de la request que se desea crear, en un shcema de request
@@ -40,15 +46,27 @@ export class CustomerRequestService {
     if (!advisorProperty) {
       throw HttpErrors[400]('no se encontro el asesor');
     }
-    //crear code request
-    request.requestStatusId = 1;
+    request.requestStatusId = 1; //estado 1= estado enviado
     request.creationDate = new Date(Date.now());
+    let repetRequest = await this.requestRepository.findOne({
+      where: {
+        customerId: request.customerId,
+        propertyId: request.propertyId,
+      },
+    });
+    if (repetRequest && repetRequest.closeDate && (repetRequest.closeDate as Date).getTime > request.creationDate.getTime) {
+      throw HttpErrors[400](
+        'un cliente no puede hacer mas de una solicitud a una misma propiedad, cuando ya cuenta con una activa',
+      );
+    }
+
     const newRequest = await this.customerRepository
-      .requests(advisorProperty.id)
+      .requests(request.customerId)
       .create(request);
     this.notifyAdvisorEmail(advisorProperty, property);
     return newRequest;
   }
+
   /**
    *recibe el advisor y la proppiedad para notificar al advisor de esa propiedad
    * e indicarle el id de la propiedad que recibio la request
