@@ -6,7 +6,7 @@ import {Request, Response} from 'express-serve-static-core';
 import path from 'path';
 import {generalConfiguration} from '../config/general.config';
 import {configurationNotification} from '../config/notification.config';
-import {Customer, Request as RequestModel} from '../models';
+import {Customer, Report, Request as RequestModel} from '../models';
 import {
   CustomerRepository,
   PropertyRepository,
@@ -37,6 +37,7 @@ export class AdvisorRequestService {
     advisorId: number,
     requestId: number,
     newStatusId: number,
+    report: Report | undefined,
   ): Promise<RequestModel | null> {
     const oldRequest = await this.requestRepository.findOne({
       where: {id: requestId, advisorId: advisorId},
@@ -130,6 +131,7 @@ export class AdvisorRequestService {
         `No puede cambiar el estado de una solicitud que ha sido abortada por un cliente`,
       );
     }
+
     if (oldRequest.requestStatusId == 10) {
       throw new HttpErrors[400](
         `No puede cambiar el estado de una solicitud que ha sido incumplimiento de contrato por parte de Akin`,
@@ -178,6 +180,7 @@ export class AdvisorRequestService {
       );
     }
 
+    ////////////////////////////////////////
     let contentEmail = '';
 
     if (
@@ -204,13 +207,20 @@ export class AdvisorRequestService {
       );
 
       if (newStatusId == 4) {
-        contentEmail = `${contentEmail} Felicitaciones, su solicitud ha sido aceptada`;
+        if (!report) {
+          throw new HttpErrors[400](
+            'Es necesario que hagas un comentario acerca del cambio del estado de la solicitud para que el cliente pueda revisarlo en los reportes',
+          );
+        }
+        contentEmail = `${contentEmail} Felicitaciones, su solicitud ha sido aceptada. Puede revisar los comentarios en la solicitud hechos por el asesor dirigiendose al sistema.`;
         const filter: Where<RequestModel> = {id: {neq: oldRequest.id}};
-        this.changeAllRequestsStatesThroughOneProperty(
+        await this.changeAllRequestsStatesThroughOneProperty(
           12,
           property.id!,
           filter,
         );
+
+        this.requestRepository.reports(oldRequest.id).create(report);
 
         const propertyRequests = property.requests;
         const customers = await this.getRejectedCustomers(
@@ -224,13 +234,20 @@ export class AdvisorRequestService {
       }
 
       if (newStatusId == 5) {
-        contentEmail = `${contentEmail} Felicitaciones, su solicitud ha sido aceptada`;
+        if (!report) {
+          throw new HttpErrors[400](
+            'Es necesario que hagas un comentario acerca del cambio del estado de la solicitud para que el cliente pueda revisarlo en los reportes',
+          );
+        }
+        contentEmail = `${contentEmail} Felicitaciones, su solicitud ha sido aceptada. Puede revisar los comentarios en la solicitud hechos por el asesor dirigiendose al sistema.`;
         const filter: Where<RequestModel> = {id: {neq: oldRequest.id}};
         this.changeAllRequestsStatesThroughOneProperty(
           12,
           property.id!,
           filter,
         );
+
+        this.requestRepository.reports(oldRequest.id).create(report);
 
         const propertyRequests = property.requests;
         const customers = await this.getRejectedCustomers(
@@ -248,18 +265,42 @@ export class AdvisorRequestService {
         por favor ingrese a akinmueble.com, inicie sesión, descargue el contrato
          y diligencielo correctamente para finalizar el proceso. Cualquier duda contacte con su asesor`;
       }
+
       if (newStatusId == 12) {
-        contentEmail = `${contentEmail} Su solicitud ha sido rechazada`;
+        if (!report) {
+          throw new HttpErrors[400](
+            'Es necesario que hagas un comentario acerca del cambio del estado de la solicitud para que el cliente pueda revisarlo en los reportes',
+          );
+        }
+        contentEmail = `${contentEmail} Su solicitud ha sido rechazada\n
+        Comentarios del asesor: ${report.commentary}`;
+
+        this.requestRepository.reports(oldRequest.id).create(report);
       }
+    }
+
+    if (newStatusId == 8 || newStatusId == 9) {
+      if (!report) {
+        throw new HttpErrors[400](
+          'Es necesario que hagas un comentario acerca del cambio del estado de la solicitud para que el cliente pueda revisarlo en los reportes',
+        );
+      }
+
+      if (newStatusId == 8) {
+        contentEmail = `${contentEmail} Su solicitud ha sido abortada ya que usted se lo ha solicitado al asesor.\n
+        Comentarios del asesor: ${report.commentary}`;
+      } else if (newStatusId == 9) {
+        contentEmail = `${contentEmail} Su solicitud ha sido rechazada\n
+        Comentarios del asesor: ${report.commentary}`;
+      }
+
+      this.requestRepository.reports(oldRequest.id).create(report);
     }
 
     oldRequest.requestStatusId = newStatusId;
 
     await this.requestRepository.update(oldRequest);
 
-    //TODO
-    //Acá es donde deberiamos notificar
-    //verificar si hay algo para notificar
     await this.notifyOneCustomer(customer, contentEmail);
 
     return await this.requestRepository.findById(requestId);

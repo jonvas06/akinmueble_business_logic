@@ -16,7 +16,7 @@ import {
 } from '@loopback/rest';
 import {Response} from 'express-serve-static-core';
 import {SecurityConfiguration} from '../config/security.config';
-import {Request as RequestModel} from '../models';
+import {Report, Request as RequestModel} from '../models';
 import {AdvisorRepository} from '../repositories';
 import {AdvisorRequestService} from '../services/advisor-request.service';
 import {FileManagerService} from '../services/fileManager.service';
@@ -108,16 +108,28 @@ export class AdvisorRequestController {
       },
     },
   )
-  async patch(
+  async changeRequestState(
     @param.path.number('advisorId') advisorId: number,
     @param.path.number('requestId') requestId: number,
     @param.path.number('statusId') statusId: number,
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: getModelSchemaRef(Report, {
+            title: 'Change request status',
+            exclude: ['id'],
+          }),
+        },
+      },
+    })
+    report?: Report,
   ): Promise<RequestModel> {
     try {
       const request = await this.advisorRequestService.changeRequestSatus(
         advisorId,
         requestId,
         statusId,
+        report,
       );
       if (!request) {
         throw new HttpErrors[400]('No se ha hecho la actualización');
