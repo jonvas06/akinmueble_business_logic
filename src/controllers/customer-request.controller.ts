@@ -15,16 +15,18 @@ import {
   post,
   requestBody,
 } from '@loopback/rest';
-import {
-  Customer,
-  Request,
-} from '../models';
+import {Customer, Request} from '../models';
 import {CustomerRepository} from '../repositories';
+import {CustomerRequestService} from '../services/customer-request.service';
+import {service} from '@loopback/core';
 
 export class CustomerRequestController {
   constructor(
-    @repository(CustomerRepository) protected customerRepository: CustomerRepository,
-  ) { }
+    @repository(CustomerRepository)
+    protected customerRepository: CustomerRepository,
+    @service(CustomerRequestService)
+    private customerRequestService: CustomerRequestService,
+  ) {}
 
   @get('/customers/{id}/requests', {
     responses: {
@@ -61,13 +63,18 @@ export class CustomerRequestController {
           schema: getModelSchemaRef(Request, {
             title: 'NewRequestInCustomer',
             exclude: ['id'],
-            optional: ['customerId']
+            optional: ['customerId'],
           }),
         },
       },
-    }) request: Omit<Request, 'id'>,
+    })
+    request: Omit<Request, 'id'>,
   ): Promise<Request> {
-    return this.customerRepository.requests(id).create(request);
+    try {
+      return await this.customerRequestService.notifyAdvisor(request);
+    } catch (error) {
+      throw error;
+    }
   }
 
   @patch('/customers/{id}/requests', {
@@ -88,7 +95,8 @@ export class CustomerRequestController {
       },
     })
     request: Partial<Request>,
-    @param.query.object('where', getWhereSchemaFor(Request)) where?: Where<Request>,
+    @param.query.object('where', getWhereSchemaFor(Request))
+    where?: Where<Request>,
   ): Promise<Count> {
     return this.customerRepository.requests(id).patch(request, where);
   }
@@ -103,7 +111,8 @@ export class CustomerRequestController {
   })
   async delete(
     @param.path.number('id') id: number,
-    @param.query.object('where', getWhereSchemaFor(Request)) where?: Where<Request>,
+    @param.query.object('where', getWhereSchemaFor(Request))
+    where?: Where<Request>,
   ): Promise<Count> {
     return this.customerRepository.requests(id).delete(where);
   }

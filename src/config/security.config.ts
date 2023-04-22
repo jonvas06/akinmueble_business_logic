@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-inferrable-types */
 export namespace SecurityConfiguration {
   export const userDb = process.env.USER_DB;
   export const passwordDb = process.env.PASSWORD_DB;
