@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import {
   Entity,
   belongsTo,
@@ -57,23 +58,13 @@ export class Request extends Entity {
   id?: number;
 
   @property({
-    type: 'string',
-    required: true,
-    index: {
-      unique: true,
-    },
-  })
-  code: string;
-
-  @property({
     type: 'date',
-    required: true,
     jsonSchema: {
       format: 'date',
       pattern: '^(\\d{4})-(\\d{2})-(\\d{2})$',
     },
   })
-  creationDate: Date;
+  creationDate?: Date;
 
   @property({
     type: 'date',

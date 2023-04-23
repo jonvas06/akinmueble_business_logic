@@ -11,6 +11,7 @@ import {
   post,
   requestBody,
 } from '@loopback/rest';
+
 import {SecurityConfiguration} from '../config/security.config';
 import {Customer, Request} from '../models';
 import {CustomerRepository} from '../repositories';
@@ -88,6 +89,13 @@ export class CustomerRequestController {
     }
   }
 
+  @authenticate({
+    strategy: 'auth',
+    options: [
+      SecurityConfiguration.menus.menuRequestId,
+      SecurityConfiguration.actions.createAction,
+    ],
+  })
   @post('/customers/{id}/requests', {
     responses: {
       '200': {
@@ -111,7 +119,11 @@ export class CustomerRequestController {
     })
     request: Omit<Request, 'id'>,
   ): Promise<Request> {
-    return this.customerRepository.requests(id).create(request);
+    try {
+      return await this.customerRequestService.notifyAdvisor(request);
+    } catch (error) {
+      throw error;
+    }
   }
 
   @patch('/customers/{id}/requests', {
@@ -137,7 +149,6 @@ export class CustomerRequestController {
   ): Promise<Count> {
     return this.customerRepository.requests(id).patch(request, where);
   }
-
   @del('/customers/{id}/requests', {
     responses: {
       '200': {
