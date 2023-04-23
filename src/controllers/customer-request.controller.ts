@@ -54,6 +54,40 @@ export class CustomerRequestController {
     }
   }
 
+  @authenticate({
+    strategy: 'auth',
+    options: [
+      SecurityConfiguration.menus.menuRequestId,
+      SecurityConfiguration.actions.listAction,
+    ],
+  })
+  @get('/customers/{customerId}/requests_details/{requestId}', {
+    responses: {
+      '200': {
+        description: 'Array of Customer has many Request',
+        content: {
+          'application/json': {
+            schema: {type: 'array', items: getModelSchemaRef(Request)},
+          },
+        },
+      },
+    },
+  })
+  async findRequestdetails(
+    @param.path.number('customerId') customerId: number,
+    @param.path.number('requestId') requestId: number,
+    // @param.query.object('filter') filter?: Filter<Request>,
+  ): Promise<Request> {
+    try {
+      return await this.customerRequestService.getDetailsRequest(
+        customerId,
+        requestId,
+      );
+    } catch (error) {
+      throw error;
+    }
+  }
+
   @post('/customers/{id}/requests', {
     responses: {
       '200': {

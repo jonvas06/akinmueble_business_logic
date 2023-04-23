@@ -19,8 +19,8 @@ export class CustomerRequestService {
     const requests = await this.customerRepository.requests(customerId).find({
       fields: [
         'id',
-        'code',
         'creationDate',
+        'closeDate',
         'requestTypeId',
         'requestStatusId',
         'propertyId',
@@ -73,5 +73,95 @@ export class CustomerRequestService {
     }
 
     return requests;
+  }
+
+  public async getDetailsRequest(
+    customerId: number,
+    requestId: number,
+  ): Promise<RequestModel> {
+    const request = await this.requestRepository.findOne({
+      fields: [
+        'id',
+        'creationDate',
+        'closeDate',
+        'requestTypeId',
+        'requestStatusId',
+        'propertyId',
+        'advisorId',
+      ],
+      include: [
+        {
+          relation: 'requestType',
+          scope: {
+            fields: ['id', 'requestTypeName'],
+          },
+        },
+        {
+          relation: 'requestStatus',
+          scope: {
+            fields: ['id', 'statusName'],
+          },
+        },
+        {
+          relation: 'property',
+          scope: {
+            fields: [
+              'id',
+              'address',
+              'price',
+              'videoSource',
+              'propertyTypeId',
+              'cityId',
+            ],
+            include: [
+              {
+                relation: 'propertyType',
+                scope: {
+                  fields: ['id', 'typeName'],
+                  limit: 1,
+                },
+              },
+              {
+                relation: 'propertyPictures',
+              },
+              {
+                relation: 'city',
+                scope: {
+                  include: [
+                    {
+                      relation: 'department',
+                    },
+                  ],
+                },
+              },
+            ],
+          },
+        },
+        {
+          relation: 'advisor',
+          scope: {
+            fields: [
+              'id',
+              'firstName',
+              'secondName',
+              'firtsLastName',
+              'secondLastName',
+              'email',
+              'phone',
+            ],
+          },
+        },
+        {
+          relation: 'reports',
+        },
+      ],
+      where: {id: requestId, customerId: customerId},
+    });
+
+    if (!request) {
+      throw new HttpErrors[400]('No se encontró la request');
+    }
+
+    return request;
   }
 }
