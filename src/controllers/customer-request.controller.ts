@@ -149,6 +149,25 @@ export class CustomerRequestController {
   ): Promise<Count> {
     return this.customerRepository.requests(id).patch(request, where);
   }
+
+  @patch('/customers/{customerId}/cancel_request/{requestId}', {
+    responses: {
+      '200': {
+        description: 'Cancel request',
+        content: {'application/json': {schema: getModelSchemaRef(Request)}},
+      },
+    },
+  })
+  async cancelRequest(
+    @param.path.number('customerId') customerId: number,
+    @param.path.number('requestId') requestId: number,
+  ): Promise<Request> {
+    try {
+      return this.customerRequestService.cancelRequest(customerId, requestId);
+    } catch (e) {
+      throw e;
+    }
+  }
   @del('/customers/{id}/requests', {
     responses: {
       '200': {

@@ -2,7 +2,7 @@ import {BindingScope, injectable, service} from '@loopback/core';
 import {repository} from '@loopback/repository';
 import {HttpErrors} from '@loopback/rest';
 import {configurationNotification} from '../config/notification.config';
-import {Advisor, Property, Request, Request as RequestModel} from '../models';
+import {Advisor, Property, Request as RequestModel} from '../models';
 import {
   AdvisorRepository,
   CustomerRepository,
@@ -183,7 +183,7 @@ export class CustomerRequestService {
    * @param request
    * @returns Request
    */
-  public async notifyAdvisor(request: Request): Promise<Request> {
+  public async notifyAdvisor(request: RequestModel): Promise<RequestModel> {
     const property = await this.propertyRepository.findOne({
       where: {id: request.propertyId},
     });
@@ -247,5 +247,35 @@ export class CustomerRequestService {
       subjectEmail: configurationNotification.subjectCustomerNotification,
     };
     this.notificationService.SendNotification(data, url);
+  }
+
+  public async cancelRequest(
+    customerId: number,
+    requestId: number,
+  ): Promise<RequestModel> {
+    const request = await this.requestRepository.findOne({
+      where: {id: requestId, customerId: customerId},
+    });
+    if (!request) {
+      throw new HttpErrors[400](
+        'No se encontró la solicitud que desea cancelar',
+      );
+    }
+
+    if (request.requestStatusId !== 1) {
+      throw new HttpErrors[400](
+        'Solo se puede cancelar una solicitud en estado enviado',
+      );
+    }
+
+    request.requestStatusId = 12;
+
+    const newRequest: RequestModel = await this.requestRepository.save(
+      request,
+      {
+        where: {id: requestId, customerId: customerId},
+      },
+    );
+    return newRequest;
   }
 }
