@@ -261,6 +261,13 @@ export class CustomerRequestService {
         'No se encontró la solicitud que desea cancelar',
       );
     }
+
+    if (request.requestStatusId !== 1) {
+      throw new HttpErrors[400](
+        'Solo se puede cancelar una solicitud en estado enviado',
+      );
+    }
+
     request.requestStatusId = 12;
 
     const newRequest: RequestModel = await this.requestRepository.save(

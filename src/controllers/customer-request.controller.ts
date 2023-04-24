@@ -153,31 +153,20 @@ export class CustomerRequestController {
   @patch('/customers/{customerId}/cancel_request/{requestId}', {
     responses: {
       '200': {
-        description: 'Customer.Request PATCH success count',
-        content: {'application/json': {schema: CountSchema}},
+        description: 'Cancel request',
+        content: {'application/json': {schema: getModelSchemaRef(Request)}},
       },
     },
   })
   async cancelRequest(
     @param.path.number('customerId') customerId: number,
     @param.path.number('requestId') requestId: number,
-    @requestBody({
-      content: {
-        'application/json': {
-          schema: getModelSchemaRef(Request, {partial: true}),
-        },
-      },
-    })
-    request: Partial<Request>,
-    @param.query.object('where', getWhereSchemaFor(Request))
-    where?: Where<Request>,
   ): Promise<Request> {
     try {
       return this.customerRequestService.cancelRequest(customerId, requestId);
     } catch (e) {
       throw e;
     }
-    //return this.customerRepository.requests(id).patch(request, where);
   }
   @del('/customers/{id}/requests', {
     responses: {
