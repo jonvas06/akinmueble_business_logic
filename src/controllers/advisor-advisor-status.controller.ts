@@ -44,7 +44,7 @@ export class AdvisorAdvisorStatusController {
   })
   async updateById(
     @param.path.number('advisorId') advisorId: number,
-    @param.path.number('advisorId') statusId: number,
+    @param.path.number('statusId') statusId: number,
     @requestBody({
       content: {
         'application/json': {
