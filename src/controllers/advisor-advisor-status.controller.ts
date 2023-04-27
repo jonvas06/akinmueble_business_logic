@@ -1,13 +1,6 @@
 import {service} from '@loopback/core';
 import {repository} from '@loopback/repository';
-import {
-  get,
-  getModelSchemaRef,
-  param,
-  patch,
-  requestBody,
-  response,
-} from '@loopback/rest';
+import {get, getModelSchemaRef, param, patch, response} from '@loopback/rest';
 import {Advisor, AdvisorStatus} from '../models';
 import {AdvisorRepository} from '../repositories';
 import {AdvisorAdvisorStatusService} from '../services/advisor-advisorStatus.service';
@@ -42,22 +35,17 @@ export class AdvisorAdvisorStatusController {
   @response(204, {
     description: 'advisorStatus PATCH success',
   })
-  async updateById(
+  async changeAdvisorStatus(
     @param.path.number('advisorId') advisorId: number,
     @param.path.number('statusId') statusId: number,
-    @requestBody({
-      content: {
-        'application/json': {
-          schema: getModelSchemaRef(Advisor, {partial: true}),
-        },
-      },
-    })
-    advisor: Advisor,
-  ): Promise<void> {
-    await this.advisorAdvisorStatusService.changeAdvisorStatus(
-      advisorId,
-      statusId,
-    );
-    // await this.advisorRepository.updateById(id, advisor);
+  ): Promise<Advisor> {
+    try {
+      return await this.advisorAdvisorStatusService.changeAdvisorStatus(
+        advisorId,
+        statusId,
+      );
+    } catch (error) {
+      throw error;
+    }
   }
 }
