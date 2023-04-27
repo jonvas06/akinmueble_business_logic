@@ -1,3 +1,4 @@
+import {service} from '@loopback/core';
 import {
   Count,
   CountSchema,
@@ -7,23 +8,26 @@ import {
   Where,
 } from '@loopback/repository';
 import {
-  post,
-  param,
+  del,
   get,
   getModelSchemaRef,
+  param,
   patch,
+  post,
   put,
-  del,
   requestBody,
   response,
 } from '@loopback/rest';
-import {Customer} from '../models';
+import {Customer, CustomerRegister} from '../models';
 import {CustomerRepository} from '../repositories';
+import {CustomerService} from '../services';
 
 export class CustomerController {
   constructor(
     @repository(CustomerRepository)
     public customerRepository : CustomerRepository,
+    @service(CustomerService)
+    private customerService: CustomerService,
   ) {}
 
   @post('/customers')
@@ -45,6 +49,28 @@ export class CustomerController {
     customer: Omit<Customer, 'id'>,
   ): Promise<Customer> {
     return this.customerRepository.create(customer);
+  }
+
+  @post('/customers-register')
+  @response(200, {
+    description: 'Customer model instance',
+    content: {'application/json': {schema: getModelSchemaRef(CustomerRegister)}},
+  })
+  async createR(
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: getModelSchemaRef(CustomerRegister, {
+            title: 'NewCustomer',
+            exclude: ['id'],
+          }),
+        },
+      },
+    })
+    customer: CustomerRegister
+  ): Promise<Object> {
+    //return this.customerRepository.create(Customer);
+    return this.customerService.getInfoLoginCustomer(customer);
   }
 
   @get('/customers/count')

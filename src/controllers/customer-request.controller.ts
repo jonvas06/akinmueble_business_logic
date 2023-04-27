@@ -1,3 +1,5 @@
+/* eslint-disable no-useless-catch */
+import {service} from '@loopback/core';
 import {
   Count,
   CountSchema,
@@ -18,7 +20,6 @@ import {
 import {Customer, Request} from '../models';
 import {CustomerRepository} from '../repositories';
 import {CustomerRequestService} from '../services/customer-request.service';
-import {service} from '@loopback/core';
 
 export class CustomerRequestController {
   constructor(

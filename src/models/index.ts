@@ -16,3 +16,4 @@ export * from './request-type.model';
 export * from './request.model';
 export * from './form-contact.model';
 export * from './general-system-variables.model';
+export * from './customer-register.model';
