@@ -1,12 +1,13 @@
 /* eslint-disable no-useless-catch */
+import {authenticate} from '@loopback/authentication';
 import {service} from '@loopback/core';
 import {
   Count,
   CountSchema,
-  Filter,
-  repository,
   Where,
+  repository
 } from '@loopback/repository';
+
 import {
   del,
   get,
@@ -17,6 +18,8 @@ import {
   post,
   requestBody,
 } from '@loopback/rest';
+
+import {SecurityConfiguration} from '../config/security.config';
 import {Customer, Request} from '../models';
 import {CustomerRepository} from '../repositories';
 import {CustomerRequestService} from '../services/customer-request.service';
@@ -26,9 +29,16 @@ export class CustomerRequestController {
     @repository(CustomerRepository)
     protected customerRepository: CustomerRepository,
     @service(CustomerRequestService)
-    private customerRequestService: CustomerRequestService,
+    protected customerRequestService: CustomerRequestService,
   ) {}
 
+  @authenticate({
+    strategy: 'auth',
+    options: [
+      SecurityConfiguration.menus.menuRequestId,
+      SecurityConfiguration.actions.listAction,
+    ],
+  })
   @get('/customers/{id}/requests', {
     responses: {
       '200': {
@@ -43,11 +53,56 @@ export class CustomerRequestController {
   })
   async find(
     @param.path.number('id') id: number,
-    @param.query.object('filter') filter?: Filter<Request>,
+    // @param.query.object('filter') filter?: Filter<Request>,
   ): Promise<Request[]> {
-    return this.customerRepository.requests(id).find(filter);
+    try {
+      return await this.customerRequestService.getRequestsByCustomer(id);
+    } catch (error) {
+      throw error;
+    }
   }
 
+  @authenticate({
+    strategy: 'auth',
+    options: [
+      SecurityConfiguration.menus.menuRequestId,
+      SecurityConfiguration.actions.listAction,
+    ],
+  })
+  @get('/customers/{customerId}/requests_details/{requestId}', {
+    responses: {
+      '200': {
+        description: 'Array of Customer has many Request',
+        content: {
+          'application/json': {
+            schema: {type: 'array', items: getModelSchemaRef(Request)},
+          },
+        },
+      },
+    },
+  })
+  async findRequestdetails(
+    @param.path.number('customerId') customerId: number,
+    @param.path.number('requestId') requestId: number,
+    // @param.query.object('filter') filter?: Filter<Request>,
+  ): Promise<Request> {
+    try {
+      return await this.customerRequestService.getDetailsRequest(
+        customerId,
+        requestId,
+      );
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @authenticate({
+    strategy: 'auth',
+    options: [
+      SecurityConfiguration.menus.menuRequestId,
+      SecurityConfiguration.actions.createAction,
+    ],
+  })
   @post('/customers/{id}/requests', {
     responses: {
       '200': {
@@ -102,6 +157,24 @@ export class CustomerRequestController {
     return this.customerRepository.requests(id).patch(request, where);
   }
 
+  @patch('/customers/{customerId}/cancel_request/{requestId}', {
+    responses: {
+      '200': {
+        description: 'Cancel request',
+        content: {'application/json': {schema: getModelSchemaRef(Request)}},
+      },
+    },
+  })
+  async cancelRequest(
+    @param.path.number('customerId') customerId: number,
+    @param.path.number('requestId') requestId: number,
+  ): Promise<Request> {
+    try {
+      return await this.customerRequestService.cancelRequest(customerId, requestId);
+    } catch (e) {
+      throw e;
+    }
+  }
   @del('/customers/{id}/requests', {
     responses: {
       '200': {
