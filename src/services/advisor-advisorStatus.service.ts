@@ -69,11 +69,14 @@ export class AdvisorAdvisorStatusService {
       roleId: SecurityConfiguration.roleIds.advisor,
     };
 
-    const response = await fetch('http://localhost:3000/user', {
-      method: 'post',
-      body: JSON.stringify(user),
-      headers: {'Content-type': 'application/json'},
-    });
+    const response = await fetch(
+      `${SecurityConfiguration.securityMicroserviceLink}/user`,
+      {
+        method: 'post',
+        body: JSON.stringify(user),
+        headers: {'Content-type': 'application/json'},
+      },
+    );
 
     const json = await response.json();
 
