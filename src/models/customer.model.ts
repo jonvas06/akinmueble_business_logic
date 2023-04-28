@@ -58,16 +58,8 @@ export class Customer extends Entity {
 
   @property({
     type: 'string',
-    //required: true,
   })
-  address: string;
-
-  @property({
-    type: 'string',
-    //required: true,
-  })
-  password: string;
-
+  address?: string;
 
   @hasMany(() => Request)
   requests: Request[];

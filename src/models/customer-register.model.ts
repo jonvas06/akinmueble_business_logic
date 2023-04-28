@@ -1,6 +1,6 @@
 import {Model, model, property} from '@loopback/repository';
 
-@model({settings: {strict: false}})
+@model()
 export class CustomerRegister extends Model {
   @property({
     type: 'string',
@@ -44,15 +44,14 @@ export class CustomerRegister extends Model {
 
   @property({
     type: 'string',
+  })
+  address?: string;
+
+  @property({
+    type: 'string',
     required: true,
   })
   password: string;
-
-  // Define well-known properties here
-
-  // Indexer property to allow additional data
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [prop: string]: any;
 
   constructor(data?: Partial<CustomerRegister>) {
     super(data);

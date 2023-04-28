@@ -60,17 +60,13 @@ export class CustomerController {
     @requestBody({
       content: {
         'application/json': {
-          schema: getModelSchemaRef(CustomerRegister, {
-            title: 'NewCustomer',
-            exclude: ['id'],
-          }),
+          schema: getModelSchemaRef(CustomerRegister),
         },
       },
     })
     customer: CustomerRegister
-  ): Promise<Object> {
-    //return this.customerRepository.create(Customer);
-    return this.customerService.getInfoLoginCustomer(customer);
+  ): Promise<Object|null> {
+    return this.customerService.createCustomer(customer);
   }
 
   @get('/customers/count')

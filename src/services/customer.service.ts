@@ -14,12 +14,28 @@ export class CustomerService {
   ) {}
 
 
-  public async getInfoLoginCustomer(customer: CustomerRegister): Promise<Object> {
+  public async createCustomer(customer: CustomerRegister): Promise<Object> {
 
-    const newCustomer: CustomerRegister = await this.customerRepository.create(customer)
-    if (!newCustomer) {
-    throw new HttpErrors[400]("No se pudo crear el customer");
+    const newCustomer = {
+      firstName : customer.firstName,
+      secondName: customer.secondName,
+      firstLastName : customer.firstLastName,
+      secondLastName : customer.secondLastName,
+      documentNumber : customer.documentNumber,
+      email: customer.email,
+      address : customer.address,
+      phone: customer.phone,
     }
+
+    if (customer.address === undefined){
+      newCustomer.address = "Sin direccíon"
+    }
+
+    const newCreateCustomer = await this.customerRepository.create(newCustomer)
+    if (!newCreateCustomer) {
+      throw new HttpErrors[400]("No se pudo crear el customer");
+    }
+    console.log("hola3");
 
     const data = {
       firstName : customer.firstName,
@@ -32,17 +48,18 @@ export class CustomerService {
       phone: customer.phone,
       idrole : `${SecurityConfiguration.rolIds.customer}`
     }
+    console.log("hola4");
 
-    const url = `${SecurityConfiguration.securityMicroserviceLink,SecurityConfiguration.createUserEndPoint}`
+    const url = `${SecurityConfiguration.securityMicroserviceLink}${SecurityConfiguration.createUserEndPoint}`
 
     const rest = await fetch(url, {
       method: 'post',
       body: JSON.stringify(data),
       headers: {'Content-type': 'application/json'},
     });
+    console.log("hola5");
 
     const json = rest.json()
-    console.log(json);
 
     return json;
   }
