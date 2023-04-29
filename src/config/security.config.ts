@@ -20,4 +20,10 @@ export namespace SecurityConfiguration {
     assignAction: 'assign',
     uploadAction: 'upload',
   };
+
+  export const roleIds = {
+    advisor: '642d9ecb02e1597baa66e448',
+    admin: '64225720d8b31f3e70717387',
+    customer: '642d9eb902e1597baa66e447',
+  };
 }
