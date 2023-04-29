@@ -66,7 +66,7 @@ export class AdvisorRequestController {
   })
   @get('/advisors/{advisorId}/download-request-contract/{requestId}')
   @oas.response.file()
-  async downloadFileByName(
+  async downloadFileByAdvisor(
     @param.path.number('advisorId') advisorId: number,
     @param.path.string('requestId') requestId: number,
     @inject(RestBindings.Http.RESPONSE) response: ResponseRes,
