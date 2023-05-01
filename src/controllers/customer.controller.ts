@@ -11,6 +11,7 @@ import {
   del,
   get,
   getModelSchemaRef,
+  HttpErrors,
   param,
   patch,
   post,
@@ -65,8 +66,12 @@ export class CustomerController {
       },
     })
     customer: CustomerRegister
-  ): Promise<Object|null> {
-    return this.customerService.createCustomer(customer);
+  ): Promise<Object> {
+    try {
+      return await this.customerService.createCustomer(customer);
+    } catch (error) {
+      throw new HttpErrors[400]("No se pudo crear el customer")
+    }
   }
 
   @get('/customers/count')

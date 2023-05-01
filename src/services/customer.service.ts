@@ -35,7 +35,6 @@ export class CustomerService {
     if (!newCreateCustomer) {
       throw new HttpErrors[400]("No se pudo crear el customer");
     }
-    console.log("hola3");
 
     const data = {
       firstName : customer.firstName,
@@ -48,7 +47,6 @@ export class CustomerService {
       phone: customer.phone,
       idrole : `${SecurityConfiguration.rolIds.customer}`
     }
-    console.log("hola4");
 
     const url = `${SecurityConfiguration.securityMicroserviceLink}${SecurityConfiguration.createUserEndPoint}`
 
@@ -57,7 +55,6 @@ export class CustomerService {
       body: JSON.stringify(data),
       headers: {'Content-type': 'application/json'},
     });
-    console.log("hola5");
 
     const json = rest.json()
 
