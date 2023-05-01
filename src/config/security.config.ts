@@ -23,7 +23,13 @@ export namespace SecurityConfiguration {
     uploadAction: 'upload',
   };
 
+<<<<<<< HEAD
   export const rolIds = {
+=======
+  export const roleIds = {
+    advisor: '642d9ecb02e1597baa66e448',
+    admin: '64225720d8b31f3e70717387',
+>>>>>>> dev
     customer: '642d9eb902e1597baa66e447',
   };
 }

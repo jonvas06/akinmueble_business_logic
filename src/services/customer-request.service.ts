@@ -1,8 +1,11 @@
+/* eslint-disable @typescript-eslint/no-floating-promises */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/naming-convention */
 import {BindingScope, injectable, service} from '@loopback/core';
 import {repository} from '@loopback/repository';
-import {HttpErrors} from '@loopback/rest';
+import {HttpErrors, Request, Response} from '@loopback/rest';
+import path from 'path';
+import {generalConfiguration} from '../config/general.config';
 import {configurationNotification} from '../config/notification.config';
 import {Advisor, Property, Request as RequestModel} from '../models';
 import {
@@ -11,6 +14,7 @@ import {
   PropertyRepository,
   RequestRepository,
 } from '../repositories';
+import {FileManagerService} from './fileManager.service';
 import {NotificationService} from './notification.service';
 
 @injectable({scope: BindingScope.TRANSIENT})
@@ -26,6 +30,8 @@ export class CustomerRequestService {
     protected requestRepository: RequestRepository,
     @service(NotificationService)
     protected notificationService: NotificationService,
+    @service(FileManagerService)
+    protected fileManagerServcie: FileManagerService,
   ) {}
 
   public async getRequestsByCustomer(
@@ -279,5 +285,65 @@ export class CustomerRequestService {
       },
     );
     return newRequest;
+  }
+
+  public async uploadContractByCustomer(
+    request: Request,
+    response: Response,
+    customerId: number,
+    requestId: number,
+  ): Promise<object | false> {
+    const filePath = path.join(
+      __dirname,
+      generalConfiguration.requestContractsFolder,
+    );
+
+    const customerRequest = await this.requestRepository.findOne({
+      where: {id: requestId, customerId: customerId},
+    });
+
+    if (!customerRequest) {
+      throw new HttpErrors[400]('No se encontró la solicitud.');
+    }
+
+    if (customerRequest.requestStatusId !== 7) {
+      throw new HttpErrors[400]('No se puede descargar el contrato');
+    }
+
+    const res = await this.fileManagerServcie.StoreFileToPath(
+      filePath,
+      generalConfiguration.requestContractPath,
+      request,
+      response,
+      generalConfiguration.contractExtensions,
+    );
+    if (res) {
+      const filename = response.req?.file?.filename;
+      if (filename) {
+        customerRequest.contractSource = filename;
+
+        this.requestRepository.update(customerRequest, {
+          where: {customerId: customerId},
+        });
+
+        return {file: filename};
+      }
+    }
+    return res;
+  }
+
+  public async findRequestByIdAndCustomerId(
+    requestId: number,
+    customerId: number,
+  ) {
+    const oldRequest = await this.requestRepository.findOne({
+      where: {id: requestId, customerId: customerId},
+    });
+
+    if (!oldRequest) {
+      throw new HttpErrors[400]('No se encontró la solicitud');
+    }
+
+    return oldRequest;
   }
 }

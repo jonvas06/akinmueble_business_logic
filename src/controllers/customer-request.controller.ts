@@ -1,18 +1,19 @@
 /* eslint-disable no-useless-catch */
 import {authenticate} from '@loopback/authentication';
-import {service} from '@loopback/core';
-import {
-  Count,
-  CountSchema,
-  Where,
-  repository
-} from '@loopback/repository';
+import {inject, service} from '@loopback/core';
+import {Count, CountSchema, Where, repository} from '@loopback/repository';
 
 import {
+  HttpErrors,
+  Request,
+  Response,
+  Response as ResponseRes,
+  RestBindings,
   del,
   get,
   getModelSchemaRef,
   getWhereSchemaFor,
+  oas,
   param,
   patch,
   post,
@@ -20,9 +21,10 @@ import {
 } from '@loopback/rest';
 
 import {SecurityConfiguration} from '../config/security.config';
-import {Customer, Request} from '../models';
+import {Customer, Request as RequestModel} from '../models';
 import {CustomerRepository} from '../repositories';
 import {CustomerRequestService} from '../services/customer-request.service';
+import {FileManagerService} from '../services/fileManager.service';
 
 export class CustomerRequestController {
   constructor(
@@ -30,6 +32,8 @@ export class CustomerRequestController {
     protected customerRepository: CustomerRepository,
     @service(CustomerRequestService)
     protected customerRequestService: CustomerRequestService,
+    @service(FileManagerService)
+    protected fileManagerServcie: FileManagerService,
   ) {}
 
   @authenticate({
@@ -45,7 +49,7 @@ export class CustomerRequestController {
         description: 'Array of Customer has many Request',
         content: {
           'application/json': {
-            schema: {type: 'array', items: getModelSchemaRef(Request)},
+            schema: {type: 'array', items: getModelSchemaRef(RequestModel)},
           },
         },
       },
@@ -54,7 +58,7 @@ export class CustomerRequestController {
   async find(
     @param.path.number('id') id: number,
     // @param.query.object('filter') filter?: Filter<Request>,
-  ): Promise<Request[]> {
+  ): Promise<RequestModel[]> {
     try {
       return await this.customerRequestService.getRequestsByCustomer(id);
     } catch (error) {
@@ -75,7 +79,7 @@ export class CustomerRequestController {
         description: 'Array of Customer has many Request',
         content: {
           'application/json': {
-            schema: {type: 'array', items: getModelSchemaRef(Request)},
+            schema: {type: 'array', items: getModelSchemaRef(RequestModel)},
           },
         },
       },
@@ -85,7 +89,7 @@ export class CustomerRequestController {
     @param.path.number('customerId') customerId: number,
     @param.path.number('requestId') requestId: number,
     // @param.query.object('filter') filter?: Filter<Request>,
-  ): Promise<Request> {
+  ): Promise<RequestModel> {
     try {
       return await this.customerRequestService.getDetailsRequest(
         customerId,
@@ -107,7 +111,9 @@ export class CustomerRequestController {
     responses: {
       '200': {
         description: 'Customer model instance',
-        content: {'application/json': {schema: getModelSchemaRef(Request)}},
+        content: {
+          'application/json': {schema: getModelSchemaRef(RequestModel)},
+        },
       },
     },
   })
@@ -116,7 +122,7 @@ export class CustomerRequestController {
     @requestBody({
       content: {
         'application/json': {
-          schema: getModelSchemaRef(Request, {
+          schema: getModelSchemaRef(RequestModel, {
             title: 'NewRequestInCustomer',
             exclude: ['id'],
             optional: ['customerId'],
@@ -124,12 +130,92 @@ export class CustomerRequestController {
         },
       },
     })
-    request: Omit<Request, 'id'>,
-  ): Promise<Request> {
+    request: Omit<RequestModel, 'id'>,
+  ): Promise<RequestModel> {
     try {
       return await this.customerRequestService.notifyAdvisor(request);
     } catch (error) {
       throw error;
+    }
+  }
+
+  @authenticate({
+    strategy: 'auth',
+    options: [
+      SecurityConfiguration.menus.menuRequestId,
+      SecurityConfiguration.actions.uploadAction,
+    ],
+  })
+  @post('/customer/{customerId}/upload-contract/{requestId}', {
+    responses: {
+      200: {
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+            },
+          },
+        },
+        description: 'file to upload',
+      },
+    },
+  })
+  async uploadContractByCustomer(
+    @param.path.number('customerId') customerId: number,
+    @param.path.number('requestId') requestId: number,
+    @inject(RestBindings.Http.RESPONSE) response: Response,
+    @requestBody.file() request: Request,
+  ): Promise<object | false> {
+    try {
+      const res = await this.customerRequestService.uploadContractByCustomer(
+        request,
+        response,
+        customerId,
+        requestId,
+      );
+      return res;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @authenticate({
+    strategy: 'auth',
+    options: [
+      SecurityConfiguration.menus.menuRequestId,
+      SecurityConfiguration.actions.downloadAction,
+    ],
+  })
+  @get('/customer/{customerId}/download-request-contract/{requestId}')
+  @oas.response.file()
+  async downloadFileByCustomer(
+    @param.path.number('customerId') customerId: number,
+    @param.path.string('requestId') requestId: number,
+    @inject(RestBindings.Http.RESPONSE) response: ResponseRes,
+  ) {
+    try {
+      const folder = this.fileManagerServcie.getFileByType(2);
+      const request =
+        await this.customerRequestService.findRequestByIdAndCustomerId(
+          requestId,
+          customerId,
+        );
+
+      if (request.requestStatusId !== 7) {
+        throw new HttpErrors[400]('No se puede descargar el contrato');
+      }
+      if (!request.contractSource) {
+        throw new HttpErrors[400](
+          'No se encontró ningún contrato para descargar',
+        );
+      }
+      const fileName = request.contractSource;
+      const file = this.fileManagerServcie.validateFileName(folder, fileName);
+
+      response.download(file, fileName);
+      return response;
+    } catch (e) {
+      throw e;
     }
   }
 
@@ -146,13 +232,13 @@ export class CustomerRequestController {
     @requestBody({
       content: {
         'application/json': {
-          schema: getModelSchemaRef(Request, {partial: true}),
+          schema: getModelSchemaRef(RequestModel, {partial: true}),
         },
       },
     })
-    request: Partial<Request>,
-    @param.query.object('where', getWhereSchemaFor(Request))
-    where?: Where<Request>,
+    request: Partial<RequestModel>,
+    @param.query.object('where', getWhereSchemaFor(RequestModel))
+    where?: Where<RequestModel>,
   ): Promise<Count> {
     return this.customerRepository.requests(id).patch(request, where);
   }
@@ -161,14 +247,16 @@ export class CustomerRequestController {
     responses: {
       '200': {
         description: 'Cancel request',
-        content: {'application/json': {schema: getModelSchemaRef(Request)}},
+        content: {
+          'application/json': {schema: getModelSchemaRef(RequestModel)},
+        },
       },
     },
   })
   async cancelRequest(
     @param.path.number('customerId') customerId: number,
     @param.path.number('requestId') requestId: number,
-  ): Promise<Request> {
+  ): Promise<RequestModel> {
     try {
       return await this.customerRequestService.cancelRequest(customerId, requestId);
     } catch (e) {
@@ -185,8 +273,8 @@ export class CustomerRequestController {
   })
   async delete(
     @param.path.number('id') id: number,
-    @param.query.object('where', getWhereSchemaFor(Request))
-    where?: Where<Request>,
+    @param.query.object('where', getWhereSchemaFor(RequestModel))
+    where?: Where<RequestModel>,
   ): Promise<Count> {
     return this.customerRepository.requests(id).delete(where);
   }
