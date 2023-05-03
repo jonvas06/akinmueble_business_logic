@@ -5,7 +5,7 @@ export namespace SecurityConfiguration {
   export const dataBase = process.env.DATABASE;
   export const hostDb = process.env.HOST_DB;
   export const PORT_DB = process.env.PORT_DB;
-  export const securityMicroserviceLink: string = 'http://localhost:3000';
+  export const securityMicroserviceLink: string = 'http://localhost:3307';
   export const createUserEndPoint: string = '/user'
 
   export const menus = {
@@ -23,13 +23,9 @@ export namespace SecurityConfiguration {
     uploadAction: 'upload',
   };
 
-<<<<<<< HEAD
-  export const rolIds = {
-=======
   export const roleIds = {
     advisor: '642d9ecb02e1597baa66e448',
     admin: '64225720d8b31f3e70717387',
->>>>>>> dev
     customer: '642d9eb902e1597baa66e447',
   };
 }

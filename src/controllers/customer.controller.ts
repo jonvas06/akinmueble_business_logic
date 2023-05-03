@@ -70,6 +70,7 @@ export class CustomerController {
     try {
       return await this.customerService.createCustomer(customer);
     } catch (error) {
+      console.log(error);
       throw new HttpErrors[400]("No se pudo crear el customer")
     }
   }

@@ -41,11 +41,10 @@ export class CustomerService {
       secondName: customer.secondName,
       firstLastName : customer.firstLastName,
       secondLastName : customer.secondLastName,
-      documentNumber : customer.documentNumber,
       email: customer.email,
       password : customer.password,
       phone: customer.phone,
-      idrole : `${SecurityConfiguration.rolIds.customer}`
+      roleId : `${SecurityConfiguration.roleIds.customer}`
     }
 
     const url = `${SecurityConfiguration.securityMicroserviceLink}${SecurityConfiguration.createUserEndPoint}`
