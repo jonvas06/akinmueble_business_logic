@@ -1,3 +1,4 @@
+import {service} from '@loopback/core';
 import {
   Count,
   CountSchema,
@@ -7,26 +8,30 @@ import {
   Where,
 } from '@loopback/repository';
 import {
-  post,
-  param,
+  del,
   get,
   getModelSchemaRef,
+  param,
   patch,
+  post,
   put,
-  del,
   requestBody,
   response,
 } from '@loopback/rest';
 import {Advisor} from '../models';
+import {CustomResponse} from '../models/custom-reponse.model';
 import {AdvisorRepository} from '../repositories';
+import {AdvisorService} from '../services/advisor.service';
 
 export class AdvisorController {
   constructor(
     @repository(AdvisorRepository)
-    public advisorRepository : AdvisorRepository,
+    public advisorRepository: AdvisorRepository,
+    @service(AdvisorService)
+    protected advisorService: AdvisorService,
   ) {}
 
-  @post('/advisors')
+  @post('/advisors-register')
   @response(200, {
     description: 'Advisor model instance',
     content: {'application/json': {schema: getModelSchemaRef(Advisor)}},
@@ -43,8 +48,13 @@ export class AdvisorController {
       },
     })
     advisor: Omit<Advisor, 'id'>,
-  ): Promise<Advisor> {
-    return this.advisorRepository.create(advisor);
+  ): Promise<CustomResponse> {
+    try {
+      return await this.advisorService.createAdvisor(advisor);
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
   }
 
   @get('/advisors/count')
@@ -52,9 +62,7 @@ export class AdvisorController {
     description: 'Advisor model count',
     content: {'application/json': {schema: CountSchema}},
   })
-  async count(
-    @param.where(Advisor) where?: Where<Advisor>,
-  ): Promise<Count> {
+  async count(@param.where(Advisor) where?: Where<Advisor>): Promise<Count> {
     return this.advisorRepository.count(where);
   }
 
@@ -106,7 +114,8 @@ export class AdvisorController {
   })
   async findById(
     @param.path.number('id') id: number,
-    @param.filter(Advisor, {exclude: 'where'}) filter?: FilterExcludingWhere<Advisor>
+    @param.filter(Advisor, {exclude: 'where'})
+    filter?: FilterExcludingWhere<Advisor>,
   ): Promise<Advisor> {
     return this.advisorRepository.findById(id, filter);
   }

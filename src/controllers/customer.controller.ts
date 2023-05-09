@@ -19,14 +19,14 @@ import {
   requestBody,
   response,
 } from '@loopback/rest';
-import {Customer, CustomerRegister} from '../models';
+import {Customer, CustomerRegister, ResponseUserMs} from '../models';
 import {CustomerRepository} from '../repositories';
 import {CustomerService} from '../services';
 
 export class CustomerController {
   constructor(
     @repository(CustomerRepository)
-    public customerRepository : CustomerRepository,
+    public customerRepository: CustomerRepository,
     @service(CustomerService)
     private customerService: CustomerService,
   ) {}
@@ -55,7 +55,9 @@ export class CustomerController {
   @post('/customers-register')
   @response(200, {
     description: 'Customer model instance',
-    content: {'application/json': {schema: getModelSchemaRef(CustomerRegister)}},
+    content: {
+      'application/json': {schema: getModelSchemaRef(CustomerRegister)},
+    },
   })
   async createR(
     @requestBody({
@@ -65,13 +67,13 @@ export class CustomerController {
         },
       },
     })
-    customer: CustomerRegister
-  ): Promise<Object> {
+    customer: CustomerRegister,
+  ): Promise<ResponseUserMs> {
     try {
       return await this.customerService.createCustomer(customer);
     } catch (error) {
       console.log(error);
-      throw new HttpErrors[400]("No se pudo crear el customer")
+      throw new HttpErrors[400]('No se pudo crear el customer');
     }
   }
 
@@ -80,9 +82,7 @@ export class CustomerController {
     description: 'Customer model count',
     content: {'application/json': {schema: CountSchema}},
   })
-  async count(
-    @param.where(Customer) where?: Where<Customer>,
-  ): Promise<Count> {
+  async count(@param.where(Customer) where?: Where<Customer>): Promise<Count> {
     return this.customerRepository.count(where);
   }
 
@@ -134,7 +134,8 @@ export class CustomerController {
   })
   async findById(
     @param.path.number('id') id: number,
-    @param.filter(Customer, {exclude: 'where'}) filter?: FilterExcludingWhere<Customer>
+    @param.filter(Customer, {exclude: 'where'})
+    filter?: FilterExcludingWhere<Customer>,
   ): Promise<Customer> {
     return this.customerRepository.findById(id, filter);
   }

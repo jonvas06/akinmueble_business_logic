@@ -2,7 +2,7 @@ import {BindingScope, injectable} from '@loopback/core';
 import {repository} from '@loopback/repository';
 import {HttpErrors} from '@loopback/rest';
 import {SecurityConfiguration} from '../config/security.config';
-import {CustomerRegister} from '../models';
+import {CustomerRegister, ResponseUserMs} from '../models';
 import {CustomerRepository} from '../repositories';
 const fetch = require('node-fetch');
 
@@ -13,41 +13,42 @@ export class CustomerService {
     private customerRepository: CustomerRepository,
   ) {}
 
-
-  public async createCustomer(customer: CustomerRegister): Promise<Object> {
-
+  public async createCustomer(
+    customer: CustomerRegister,
+  ): Promise<ResponseUserMs> {
     const newCustomer = {
-      firstName : customer.firstName,
+      firstName: customer.firstName,
       secondName: customer.secondName,
-      firstLastName : customer.firstLastName,
-      secondLastName : customer.secondLastName,
-      documentNumber : customer.documentNumber,
+      firstLastName: customer.firstLastName,
+      secondLastName: customer.secondLastName,
+      documentNumber: customer.documentNumber,
       email: customer.email,
-      address : customer.address,
+      address: customer.address,
       phone: customer.phone,
+    };
+
+    if (customer.address === undefined) {
+      newCustomer.address = 'Sin direccíon';
     }
 
-    if (customer.address === undefined){
-      newCustomer.address = "Sin direccíon"
-    }
-
-    const newCreateCustomer = await this.customerRepository.create(newCustomer)
+    const newCreateCustomer = await this.customerRepository.create(newCustomer);
     if (!newCreateCustomer) {
-      throw new HttpErrors[400]("No se pudo crear el customer");
+      throw new HttpErrors[400]('No se pudo crear el customer');
     }
 
     const data = {
-      firstName : customer.firstName,
-      secondName: customer.secondName,
-      firstLastName : customer.firstLastName,
-      secondLastName : customer.secondLastName,
-      email: customer.email,
-      password : customer.password,
-      phone: customer.phone,
-      roleId : `${SecurityConfiguration.roleIds.customer}`
-    }
+      firstName: newCreateCustomer.firstName,
+      secondName: newCreateCustomer.secondName,
+      firstLastName: newCreateCustomer.firstLastName,
+      secondLastName: newCreateCustomer.secondLastName,
+      email: newCreateCustomer.email,
+      password: customer.password,
+      phone: newCreateCustomer.phone,
+      pk: newCreateCustomer.id,
+      roleId: `${SecurityConfiguration.roleIds.customer}`,
+    };
 
-    const url = `${SecurityConfiguration.securityMicroserviceLink}${SecurityConfiguration.createUserEndPoint}`
+    const url = `${SecurityConfiguration.securityMicroserviceLink}${SecurityConfiguration.createUserEndPoint}`;
 
     const rest = await fetch(url, {
       method: 'post',
@@ -55,9 +56,8 @@ export class CustomerService {
       headers: {'Content-type': 'application/json'},
     });
 
-    const json = rest.json()
+    const json = rest.json();
 
-    return json;
+    return json as ResponseUserMs;
   }
 }
-
