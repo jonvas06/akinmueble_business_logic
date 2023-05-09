@@ -1,6 +1,7 @@
 export * from './advisor-status.model';
 export * from './advisor.model';
 export * from './city.model';
+export * from './customer-register.model';
 export * from './customer.model';
 export * from './department.model';
 export * from './form-contact.model';
@@ -17,3 +18,4 @@ export * from './request-status.model';
 export * from './request-type.model';
 export * from './request.model';
 export * from './response-user-ms.model';
+

@@ -1,6 +1,8 @@
+/* eslint-disable no-useless-catch */
 import {authenticate} from '@loopback/authentication';
 import {inject, service} from '@loopback/core';
 import {Count, CountSchema, Where, repository} from '@loopback/repository';
+
 import {
   HttpErrors,
   Request,
@@ -165,7 +167,7 @@ export class CustomerRequestController {
     @requestBody.file() request: Request,
   ): Promise<object | false> {
     try {
-      let res = await this.customerRequestService.uploadContractByCustomer(
+      const res = await this.customerRequestService.uploadContractByCustomer(
         request,
         response,
         customerId,
@@ -256,7 +258,7 @@ export class CustomerRequestController {
     @param.path.number('requestId') requestId: number,
   ): Promise<RequestModel> {
     try {
-      return this.customerRequestService.cancelRequest(customerId, requestId);
+      return await this.customerRequestService.cancelRequest(customerId, requestId);
     } catch (e) {
       throw e;
     }

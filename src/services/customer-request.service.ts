@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-floating-promises */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/naming-convention */
 import {BindingScope, injectable, service} from '@loopback/core';
 import {repository} from '@loopback/repository';
 import {HttpErrors, Request, Response} from '@loopback/rest';
@@ -203,7 +206,7 @@ export class CustomerRequestService {
     }
     request.requestStatusId = 1; //estado 1= estado enviado
     request.creationDate = new Date(Date.now());
-    let repetRequest = await this.requestRepository.find({
+    const repetRequest = await this.requestRepository.find({
       where: {
         customerId: request.customerId,
         propertyId: request.propertyId,
@@ -242,7 +245,7 @@ export class CustomerRequestService {
    */
   private notifyAdvisorEmail(advisorProperty: Advisor, property: Property) {
     const url = configurationNotification.urlNotification2fa;
-    let data = {
+    const data = {
       destinationEmail: advisorProperty.email,
       destinationName:
         advisorProperty.firstName + ' ' + advisorProperty.secondName
@@ -307,7 +310,7 @@ export class CustomerRequestService {
       throw new HttpErrors[400]('No se puede descargar el contrato');
     }
 
-    let res = await this.fileManagerServcie.StoreFileToPath(
+    const res = await this.fileManagerServcie.StoreFileToPath(
       filePath,
       generalConfiguration.requestContractPath,
       request,

@@ -1,3 +1,4 @@
+import {service} from '@loopback/core';
 import {
   Count,
   CountSchema,
@@ -7,23 +8,27 @@ import {
   Where,
 } from '@loopback/repository';
 import {
-  post,
-  param,
+  del,
   get,
   getModelSchemaRef,
+  HttpErrors,
+  param,
   patch,
+  post,
   put,
-  del,
   requestBody,
   response,
 } from '@loopback/rest';
-import {Customer} from '../models';
+import {Customer, CustomerRegister, ResponseUserMs} from '../models';
 import {CustomerRepository} from '../repositories';
+import {CustomerService} from '../services';
 
 export class CustomerController {
   constructor(
     @repository(CustomerRepository)
-    public customerRepository : CustomerRepository,
+    public customerRepository: CustomerRepository,
+    @service(CustomerService)
+    private customerService: CustomerService,
   ) {}
 
   @post('/customers')
@@ -47,14 +52,37 @@ export class CustomerController {
     return this.customerRepository.create(customer);
   }
 
+  @post('/customers-register')
+  @response(200, {
+    description: 'Customer model instance',
+    content: {
+      'application/json': {schema: getModelSchemaRef(CustomerRegister)},
+    },
+  })
+  async createR(
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: getModelSchemaRef(CustomerRegister),
+        },
+      },
+    })
+    customer: CustomerRegister,
+  ): Promise<ResponseUserMs> {
+    try {
+      return await this.customerService.createCustomer(customer);
+    } catch (error) {
+      console.log(error);
+      throw new HttpErrors[400]('No se pudo crear el customer');
+    }
+  }
+
   @get('/customers/count')
   @response(200, {
     description: 'Customer model count',
     content: {'application/json': {schema: CountSchema}},
   })
-  async count(
-    @param.where(Customer) where?: Where<Customer>,
-  ): Promise<Count> {
+  async count(@param.where(Customer) where?: Where<Customer>): Promise<Count> {
     return this.customerRepository.count(where);
   }
 
@@ -106,7 +134,8 @@ export class CustomerController {
   })
   async findById(
     @param.path.number('id') id: number,
-    @param.filter(Customer, {exclude: 'where'}) filter?: FilterExcludingWhere<Customer>
+    @param.filter(Customer, {exclude: 'where'})
+    filter?: FilterExcludingWhere<Customer>,
   ): Promise<Customer> {
     return this.customerRepository.findById(id, filter);
   }
