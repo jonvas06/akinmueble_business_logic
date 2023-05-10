@@ -1,15 +1,7 @@
-import {Entity, hasMany, model, property} from '@loopback/repository';
-import {Request} from './request.model';
+import {Model, model, property} from '@loopback/repository';
 
 @model()
-export class Customer extends Entity {
-  @property({
-    type: 'number',
-    id: true,
-    generated: true,
-  })
-  id?: number;
-
+export class CustomerRegister extends Model {
   @property({
     type: 'string',
     required: true,
@@ -23,6 +15,12 @@ export class Customer extends Entity {
 
   @property({
     type: 'string',
+    required: true,
+  })
+  firstLastName: string;
+
+  @property({
+    type: 'string',
   })
   secondLastName?: string;
 
@@ -30,23 +28,11 @@ export class Customer extends Entity {
     type: 'string',
     required: true,
   })
-  firstLastName: string;
-
-  @property({
-    type: 'string',
-    required: true,
-    index: {
-      unique: true,
-    },
-  })
   documentNumber: string;
 
   @property({
     type: 'string',
     required: true,
-    index: {
-      unique: true,
-    },
   })
   email: string;
 
@@ -61,16 +47,19 @@ export class Customer extends Entity {
   })
   address?: string;
 
-  @hasMany(() => Request)
-  requests: Request[];
+  @property({
+    type: 'string',
+    required: true,
+  })
+  password: string;
 
-  constructor(data?: Partial<Customer>) {
+  constructor(data?: Partial<CustomerRegister>) {
     super(data);
   }
 }
 
-export interface CustomerRelations {
+export interface CustomerRegisterRelations {
   // describe navigational properties here
 }
 
-export type CustomerWithRelations = Customer & CustomerRelations;
+export type CustomerRegisterWithRelations = CustomerRegister & CustomerRegisterRelations;

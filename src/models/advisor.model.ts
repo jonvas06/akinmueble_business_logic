@@ -77,9 +77,8 @@ export class Advisor extends Entity {
 
   @property({
     type: 'string',
-    required: true,
   })
-  address: string;
+  address?: string;
 
   @property({
     type: 'date',

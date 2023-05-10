@@ -18,6 +18,7 @@ export class AdvisorAdvisorStatusService {
     statusId: number,
   ): Promise<Advisor> {
     const advisor = await this.advisorRepository.findById(advisorId);
+
     if (!advisor) {
       throw new HttpErrors[400]('No se encontró el asesor');
     }
@@ -36,6 +37,7 @@ export class AdvisorAdvisorStatusService {
 
     if (statusId === 1) {
       const userIsCreated = await this.createAdvisorUser(advisor);
+
       if (!userIsCreated || (userIsCreated && !userIsCreated.ok)) {
         throw new HttpErrors[400](
           'No fue posible crear el usuario para el asesor',
@@ -60,9 +62,9 @@ export class AdvisorAdvisorStatusService {
   public async createAdvisorUser(advisor: Advisor): Promise<ResponseUserMs> {
     const user = {
       firstName: advisor.firstName,
-      secondName: advisor.secondName,
+      secondName: advisor.secondName || '',
       firstLastName: advisor.firtsLastName,
-      secondLastName: advisor.secondLastName,
+      secondLastName: advisor.secondLastName || '',
       email: advisor.email,
       phone: advisor.phone,
       pk: advisor.id,
