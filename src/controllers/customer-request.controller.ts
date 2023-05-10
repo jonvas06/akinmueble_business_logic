@@ -131,7 +131,7 @@ export class CustomerRequestController {
     request: Omit<RequestModel, 'id'>,
   ): Promise<RequestModel> {
     try {
-      return await this.customerRequestService.notifyAdvisor(request);
+      return await this.customerRequestService.createRequest(request);
     } catch (error) {
       throw error;
     }

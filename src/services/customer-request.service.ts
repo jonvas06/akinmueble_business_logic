@@ -188,18 +188,18 @@ export class CustomerRequestService {
    * @param request
    * @returns Request
    */
-  public async notifyAdvisor(request: RequestModel): Promise<RequestModel> {
+  public async createRequest(request: RequestModel): Promise<RequestModel> {
     const property = await this.propertyRepository.findOne({
       where: {id: request.propertyId},
     });
     if (!property) {
-      throw HttpErrors[400]('no se encuentra la propiedad');
+      throw HttpErrors[400]('No se encuentra la propiedad');
     }
     const advisorProperty = await this.advisorRepository.findOne({
       where: {id: property.advisorId},
     });
     if (!advisorProperty) {
-      throw HttpErrors[400]('no se encontro el asesor');
+      throw HttpErrors[400]('No se encontro el asesor');
     }
     request.requestStatusId = 1; //estado 1= estado enviado
     request.creationDate = new Date(Date.now());
@@ -214,15 +214,15 @@ export class CustomerRequestService {
       repetRequest.forEach(element => {
         if (!element.closeDate) {
           throw HttpErrors[400](
-            'un cliente no puede hacer mas de una solicitud a una misma propiedad, cuando ya cuenta con una activa',
+            'Un cliente no puede hacer mas de una solicitud a una misma propiedad, cuando ya cuenta con una activa',
           );
         }
         if (!request.creationDate) {
-          throw HttpErrors[400]('se ha generado un error al crear la fecha');
+          throw HttpErrors[400]('Se ha generado un error al crear la fecha');
         }
         if (element.closeDate.getDate > request.creationDate.getDate) {
           throw HttpErrors[400](
-            'un cliente no puede hacer mas de una solicitud a una misma propiedad, cuando ya cuenta con una activa',
+            'Un cliente no puede hacer mas de una solicitud a una misma propiedad, cuando ya cuenta con una activa',
           );
         }
       });
