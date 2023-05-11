@@ -1,3 +1,5 @@
+import {authenticate} from '@loopback/authentication';
+import {service} from '@loopback/core';
 import {
   Count,
   CountSchema,
@@ -7,23 +9,28 @@ import {
   Where,
 } from '@loopback/repository';
 import {
-  post,
-  param,
+  del,
   get,
   getModelSchemaRef,
+  param,
   patch,
+  post,
   put,
-  del,
   requestBody,
   response,
 } from '@loopback/rest';
+import {SecurityConfiguration} from '../config/security.config';
 import {Request} from '../models';
+import {CustomResponse} from '../models/custom-reponse.model';
 import {RequestRepository} from '../repositories';
+import {RequestService} from '../services/request.service';
 
 export class RequestController {
   constructor(
     @repository(RequestRepository)
-    public requestRepository : RequestRepository,
+    public requestRepository: RequestRepository,
+    @service(RequestService)
+    protected requestService: RequestService,
   ) {}
 
   @post('/requests')
@@ -52,9 +59,7 @@ export class RequestController {
     description: 'Request model count',
     content: {'application/json': {schema: CountSchema}},
   })
-  async count(
-    @param.where(Request) where?: Where<Request>,
-  ): Promise<Count> {
+  async count(@param.where(Request) where?: Where<Request>): Promise<Count> {
     return this.requestRepository.count(where);
   }
 
@@ -106,7 +111,8 @@ export class RequestController {
   })
   async findById(
     @param.path.number('id') id: number,
-    @param.filter(Request, {exclude: 'where'}) filter?: FilterExcludingWhere<Request>
+    @param.filter(Request, {exclude: 'where'})
+    filter?: FilterExcludingWhere<Request>,
   ): Promise<Request> {
     return this.requestRepository.findById(id, filter);
   }
@@ -127,6 +133,29 @@ export class RequestController {
     request: Request,
   ): Promise<void> {
     await this.requestRepository.updateById(id, request);
+  }
+
+  @authenticate({
+    strategy: 'auth',
+    options: [
+      SecurityConfiguration.menus.menuRequestId,
+      SecurityConfiguration.actions.assignAction,
+    ],
+  })
+  @patch('/requests/{requestId}/{newAdvisorIid}')
+  @response(204, {
+    description: 'Request PATCH success',
+  })
+  async ChangeAdvisor(
+    @param.path.number('requestId') requestId: number,
+    @param.path.number('newAdvisorIid') newAdvisorId: number,
+  ): Promise<CustomResponse> {
+    try {
+      return this.requestService.changeAdvisor(requestId, newAdvisorId);
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
   }
 
   @put('/requests/{id}')
