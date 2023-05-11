@@ -7,7 +7,24 @@ const fetch = require('node-fetch');
 export class NotificationService {
   constructor() {}
 
-  // eslint-disable-next-line @typescript-eslint/naming-convention, @typescript-eslint/no-explicit-any
+  // let data = {
+  //   destinationEmail: customer.email,
+  //   destinationName:
+  //     customer.firstName + ' ' + customer.secondName
+  //       ? customer.secondName
+  //       : '' + '' + customer.firstLastName,
+  //   contectEmail: `${content}`,
+  //   subjectEmail: configurationNotification.subjectCustomerNotification,
+  // };
+
+  /**
+   *
+   * @param data object with destinationEmail: string,
+   *  destinationName: string ,contectEmail: string ,
+   * subjectEmail: string
+   * @param url
+   * @returns boolean
+   */
   SendNotification(data: any, url: string): boolean {
     try {
       fetch(url, {
@@ -19,8 +36,5 @@ export class NotificationService {
     } catch {
       return false;
     }
-
   }
-
-  
 }
