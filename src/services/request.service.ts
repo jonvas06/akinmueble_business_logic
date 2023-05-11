@@ -2,7 +2,7 @@ import {BindingScope, injectable, service} from '@loopback/core';
 import {repository} from '@loopback/repository';
 import {HttpErrors} from '@loopback/rest';
 import {configurationNotification} from '../config/notification.config';
-import {Advisor, Request as RequestModel} from '../models';
+import {Advisor, Customer, Request as RequestModel} from '../models';
 import {CustomResponse} from '../models/custom-reponse.model';
 import {AdvisorRepository, RequestRepository} from '../repositories';
 import {NotificationService} from './notification.service';
@@ -29,7 +29,7 @@ export class RequestService {
     );
 
     if (!request) {
-      throw new HttpErrors[400]('No se encontró la solicitud');
+      throw new HttpErrors[400]('Ocurrió un error al buscar la solicitud');
     }
 
     if (request.requestStatusId != 1) {
@@ -46,14 +46,17 @@ export class RequestService {
 
     if (!newAdvisor) {
       throw new HttpErrors[400](
-        'No se encontró el asesor al que desea asignarle la solicitud',
+        'Ocurrió un error al buscar el asesor al que desea asignarle la solicitud',
       );
     }
 
-    request.advisorId = newAdvisorId;
+    const customer: Customer = await this.requestRepository.customer(requestId);
 
-    request.requestStatusId = 2;
-    this.requestRepository.save(request);
+    if (!customer) {
+      throw new HttpErrors[400](
+        'Ocurrió un error al buscar el cliente que creo la solicitud',
+      );
+    }
 
     const previousAdvisorEmailData = {
       destinationEmail: previousAdvisor.email,
@@ -69,10 +72,21 @@ export class RequestService {
       subjectEmail: configurationNotification.subjectAdvisorNotification,
     };
 
-    const url = configurationNotification.urlNotification2fa;
+    const customerEmailData = {
+      destinationEmail: customer.email,
+      destinationName: `${customer.firstName} ${customer.firstLastName}`,
+      contectEmail: `Su solicitud con id ${requestId} se encuentra desde este momento en estudio, estaremos en contacto con usted.`,
+      subjectEmail: configurationNotification.subjectAdvisorNotification,
+    };
 
+    request.advisorId = newAdvisorId;
+    request.requestStatusId = 2;
+    this.requestRepository.save(request);
+
+    const url = configurationNotification.urlNotification2fa;
     this.notificationService.SendNotification(previousAdvisorEmailData, url);
     this.notificationService.SendNotification(newAdvisorEmailData, url);
+    this.notificationService.SendNotification(customerEmailData, url);
 
     response.ok = true;
     response.message = 'Se ha reasignado la solicitud con éxito';
