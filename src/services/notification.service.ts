@@ -7,16 +7,6 @@ const fetch = require('node-fetch');
 export class NotificationService {
   constructor() {}
 
-  // let data = {
-  //   destinationEmail: customer.email,
-  //   destinationName:
-  //     customer.firstName + ' ' + customer.secondName
-  //       ? customer.secondName
-  //       : '' + '' + customer.firstLastName,
-  //   contectEmail: `${content}`,
-  //   subjectEmail: configurationNotification.subjectCustomerNotification,
-  // };
-
   /**
    *
    * @param data object with destinationEmail: string,
