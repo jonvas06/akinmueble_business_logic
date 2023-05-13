@@ -1,3 +1,4 @@
+import {authenticate} from '@loopback/authentication';
 import {
   Count,
   CountSchema,
@@ -7,29 +8,39 @@ import {
   Where,
 } from '@loopback/repository';
 import {
-  post,
-  param,
+  del,
   get,
   getModelSchemaRef,
+  HttpErrors,
+  param,
   patch,
+  post,
   put,
-  del,
   requestBody,
   response,
 } from '@loopback/rest';
+import {SecurityConfiguration} from '../config/security.config';
 import {Department} from '../models';
+import {CustomResponse} from '../models/custom-reponse.model';
 import {DepartmentRepository} from '../repositories';
 
 export class DepartmentController {
   constructor(
     @repository(DepartmentRepository)
-    public departmentRepository : DepartmentRepository,
+    public departmentRepository: DepartmentRepository,
   ) {}
 
+  @authenticate({
+    strategy: 'auth',
+    options: [
+      SecurityConfiguration.menus.menuGlobalId,
+      SecurityConfiguration.actions.createAction,
+    ],
+  })
   @post('/departments')
   @response(200, {
     description: 'Department model instance',
-    content: {'application/json': {schema: getModelSchemaRef(Department)}},
+    content: {'application/json': {schema: getModelSchemaRef(CustomResponse)}},
   })
   async create(
     @requestBody({
@@ -43,8 +54,23 @@ export class DepartmentController {
       },
     })
     department: Omit<Department, 'id'>,
-  ): Promise<Department> {
-    return this.departmentRepository.create(department);
+  ): Promise<CustomResponse> {
+    const response: CustomResponse = new CustomResponse();
+    try {
+      const newDepartment = await this.departmentRepository.create(department);
+
+      if (!newDepartment) {
+        throw HttpErrors[400]('No se pudo crear el departamento');
+      }
+
+      response.ok = true;
+      response.message = 'El departamento se ha creado correctamente';
+      response.data = newDepartment;
+
+      return response;
+    } catch (e) {
+      throw e;
+    }
   }
 
   @get('/departments/count')
@@ -106,7 +132,8 @@ export class DepartmentController {
   })
   async findById(
     @param.path.number('id') id: number,
-    @param.filter(Department, {exclude: 'where'}) filter?: FilterExcludingWhere<Department>
+    @param.filter(Department, {exclude: 'where'})
+    filter?: FilterExcludingWhere<Department>,
   ): Promise<Department> {
     return this.departmentRepository.findById(id, filter);
   }

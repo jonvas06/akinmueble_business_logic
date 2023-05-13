@@ -1,3 +1,4 @@
+import {authenticate} from '@loopback/authentication';
 import {
   Count,
   CountSchema,
@@ -7,29 +8,39 @@ import {
   Where,
 } from '@loopback/repository';
 import {
-  post,
-  param,
+  del,
   get,
   getModelSchemaRef,
+  HttpErrors,
+  param,
   patch,
+  post,
   put,
-  del,
   requestBody,
   response,
 } from '@loopback/rest';
+import {SecurityConfiguration} from '../config/security.config';
 import {City} from '../models';
+import {CustomResponse} from '../models/custom-reponse.model';
 import {CityRepository} from '../repositories';
 
 export class CityController {
   constructor(
     @repository(CityRepository)
-    public cityRepository : CityRepository,
+    public cityRepository: CityRepository,
   ) {}
 
+  @authenticate({
+    strategy: 'auth',
+    options: [
+      SecurityConfiguration.menus.menuGlobalId,
+      SecurityConfiguration.actions.createAction,
+    ],
+  })
   @post('/cities')
   @response(200, {
     description: 'City model instance',
-    content: {'application/json': {schema: getModelSchemaRef(City)}},
+    content: {'application/json': {schema: getModelSchemaRef(CustomResponse)}},
   })
   async create(
     @requestBody({
@@ -43,8 +54,23 @@ export class CityController {
       },
     })
     city: Omit<City, 'id'>,
-  ): Promise<City> {
-    return this.cityRepository.create(city);
+  ): Promise<CustomResponse> {
+    const response: CustomResponse = new CustomResponse();
+    try {
+      const newCity = await this.cityRepository.create(city);
+
+      if (!newCity) {
+        throw HttpErrors[400]('No se pudo crear la ciudad');
+      }
+
+      response.ok = true;
+      response.message = 'La ciudad se ha creado correctamente';
+      response.data = newCity;
+
+      return response;
+    } catch (e) {
+      throw e;
+    }
   }
 
   @get('/cities/count')
@@ -52,9 +78,7 @@ export class CityController {
     description: 'City model count',
     content: {'application/json': {schema: CountSchema}},
   })
-  async count(
-    @param.where(City) where?: Where<City>,
-  ): Promise<Count> {
+  async count(@param.where(City) where?: Where<City>): Promise<Count> {
     return this.cityRepository.count(where);
   }
 
@@ -70,9 +94,7 @@ export class CityController {
       },
     },
   })
-  async find(
-    @param.filter(City) filter?: Filter<City>,
-  ): Promise<City[]> {
+  async find(@param.filter(City) filter?: Filter<City>): Promise<City[]> {
     return this.cityRepository.find(filter);
   }
 
@@ -106,7 +128,7 @@ export class CityController {
   })
   async findById(
     @param.path.number('id') id: number,
-    @param.filter(City, {exclude: 'where'}) filter?: FilterExcludingWhere<City>
+    @param.filter(City, {exclude: 'where'}) filter?: FilterExcludingWhere<City>,
   ): Promise<City> {
     return this.cityRepository.findById(id, filter);
   }
