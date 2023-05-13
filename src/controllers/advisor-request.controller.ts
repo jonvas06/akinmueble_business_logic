@@ -143,7 +143,7 @@ export class AdvisorRequestController {
   @authenticate({
     strategy: 'auth',
     options: [
-      SecurityConfiguration.menus.menuPropertyId,
+      SecurityConfiguration.menus.menuRequestId,
       SecurityConfiguration.actions.uploadAction,
     ],
   })
@@ -174,6 +174,47 @@ export class AdvisorRequestController {
         advisorId,
         requestId,
       );
+      return res;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @authenticate({
+    strategy: 'auth',
+    options: [
+      SecurityConfiguration.menus.menuRequestId,
+      SecurityConfiguration.actions.uploadAction,
+    ],
+  })
+  @post('/advisors/{advisorId}/upload-documents-codeptor/{requestId}', {
+    responses: {
+      200: {
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+            },
+          },
+        },
+        description: 'file to upload',
+      },
+    },
+  })
+  async uploadDocumentsCodeptortByAdvisor(
+    @param.path.number('advisorId') advisorId: number,
+    @param.path.number('requestId') requestId: number,
+    @inject(RestBindings.Http.RESPONSE) response: Response,
+    @requestBody.file() request: Request,
+  ): Promise<object | false> {
+    try {
+      let res =
+        await this.advisorRequestService.uploadDocumentsCodeptorByAdvisor(
+          request,
+          response,
+          advisorId,
+          requestId,
+        );
       return res;
     } catch (error) {
       throw error;

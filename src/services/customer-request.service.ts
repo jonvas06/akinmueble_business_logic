@@ -295,7 +295,7 @@ export class CustomerRequestService {
   ): Promise<object | false> {
     const filePath = path.join(
       __dirname,
-      generalConfiguration.requestContractsFolder,
+      generalConfiguration.requestDocumentsFolder,
     );
 
     const customerRequest = await this.requestRepository.findOne({
@@ -312,10 +312,10 @@ export class CustomerRequestService {
 
     const res = await this.fileManagerServcie.StoreFileToPath(
       filePath,
-      generalConfiguration.requestContractPath,
+      generalConfiguration.requestDocumentPath,
       request,
       response,
-      generalConfiguration.contractExtensions,
+      generalConfiguration.documentsExtensions,
     );
     if (res) {
       const filename = response.req?.file?.filename;

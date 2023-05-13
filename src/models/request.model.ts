@@ -80,6 +80,11 @@ export class Request extends Entity {
   })
   contractSource?: string;
 
+  @property({
+    type: 'string',
+  })
+  codeptorDocumentsSource?: string;
+
   @belongsTo(() => Property)
   propertyId: number;
 
