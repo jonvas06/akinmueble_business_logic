@@ -154,6 +154,12 @@ export class AdvisorRequestService {
       );
     }
 
+    if (newStatusId == 3 && oldRequest.codeptorDocumentsSource == null) {
+      throw new HttpErrors[400](
+        `No puede cambiar el estado a estudio con codeudor si no existe un formato para los documentos de codeudor cargado`,
+      );
+    }
+
     if (newStatusId == 7 && oldRequest.contractSource == null) {
       throw new HttpErrors[400](
         `No puede cambiar el estado a pendiente por contrato si no existe un contrato cargado`,
