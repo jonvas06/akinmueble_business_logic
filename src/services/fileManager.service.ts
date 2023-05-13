@@ -88,7 +88,7 @@ export class FileManagerService {
       case 2:
         filePath = path.join(
           __dirname,
-          generalConfiguration.requestContractsFolder,
+          generalConfiguration.requestDocumentsFolder,
         );
         break;
       default:

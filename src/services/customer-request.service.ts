@@ -287,7 +287,7 @@ export class CustomerRequestService {
     return newRequest;
   }
 
-  public async uploadContractByCustomer(
+  public async uploadDocumentByCustomer(
     request: Request,
     response: Response,
     customerId: number,
@@ -295,7 +295,7 @@ export class CustomerRequestService {
   ): Promise<object | false> {
     const filePath = path.join(
       __dirname,
-      generalConfiguration.requestContractsFolder,
+      generalConfiguration.requestDocumentsFolder,
     );
 
     const customerRequest = await this.requestRepository.findOne({
@@ -306,21 +306,28 @@ export class CustomerRequestService {
       throw new HttpErrors[400]('No se encontró la solicitud.');
     }
 
-    if (customerRequest.requestStatusId !== 7) {
-      throw new HttpErrors[400]('No se puede descargar el contrato');
+    if (
+      customerRequest.requestStatusId !== 7 &&
+      customerRequest.requestStatusId !== 3
+    ) {
+      throw new HttpErrors[400]('No se puede cargar el documento solicitado');
     }
 
     const res = await this.fileManagerServcie.StoreFileToPath(
       filePath,
-      generalConfiguration.requestContractPath,
+      generalConfiguration.requestDocumentPath,
       request,
       response,
-      generalConfiguration.contractExtensions,
+      generalConfiguration.documentsExtensions,
     );
     if (res) {
       const filename = response.req?.file?.filename;
       if (filename) {
-        customerRequest.contractSource = filename;
+        if (customerRequest.requestStatusId == 3) {
+          customerRequest.codeptorDocumentsSource = filename;
+        } else {
+          customerRequest.contractSource = filename;
+        }
 
         this.requestRepository.update(customerRequest, {
           where: {customerId: customerId},

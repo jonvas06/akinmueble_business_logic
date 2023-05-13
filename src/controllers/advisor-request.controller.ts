@@ -88,6 +88,38 @@ export class AdvisorRequestController {
     response.download(file, fileName);
     return response;
   }
+
+  @authenticate({
+    strategy: 'auth',
+    options: [
+      SecurityConfiguration.menus.menuRequestId,
+      SecurityConfiguration.actions.downloadAction,
+    ],
+  })
+  @get('/advisors/{advisorId}/download-documents-codeptor/{requestId}')
+  @oas.response.file()
+  async downloadDocumentsCodeptorByAdvisor(
+    @param.path.number('advisorId') advisorId: number,
+    @param.path.string('requestId') requestId: number,
+    @inject(RestBindings.Http.RESPONSE) response: ResponseRes,
+  ) {
+    const folder = this.fileManagerServcie.getFileByType(2);
+    const request =
+      await this.advisorRequestService.findRequestByIdAndAdvisorId(
+        requestId,
+        advisorId,
+      );
+    if (!request.codeptorDocumentsSource) {
+      throw new HttpErrors[400](
+        'No se encontró ningún documento para descargar',
+      );
+    }
+    const fileName = request.codeptorDocumentsSource;
+    const file = this.fileManagerServcie.validateFileName(folder, fileName);
+
+    response.download(file, fileName);
+    return response;
+  }
   @authenticate({
     strategy: 'auth',
     options: [
@@ -143,7 +175,7 @@ export class AdvisorRequestController {
   @authenticate({
     strategy: 'auth',
     options: [
-      SecurityConfiguration.menus.menuPropertyId,
+      SecurityConfiguration.menus.menuRequestId,
       SecurityConfiguration.actions.uploadAction,
     ],
   })
@@ -174,6 +206,47 @@ export class AdvisorRequestController {
         advisorId,
         requestId,
       );
+      return res;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @authenticate({
+    strategy: 'auth',
+    options: [
+      SecurityConfiguration.menus.menuRequestId,
+      SecurityConfiguration.actions.uploadAction,
+    ],
+  })
+  @post('/advisors/{advisorId}/upload-documents-codeptor/{requestId}', {
+    responses: {
+      200: {
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+            },
+          },
+        },
+        description: 'file to upload',
+      },
+    },
+  })
+  async uploadDocumentsCodeptortByAdvisor(
+    @param.path.number('advisorId') advisorId: number,
+    @param.path.number('requestId') requestId: number,
+    @inject(RestBindings.Http.RESPONSE) response: Response,
+    @requestBody.file() request: Request,
+  ): Promise<object | false> {
+    try {
+      let res =
+        await this.advisorRequestService.uploadDocumentsCodeptorByAdvisor(
+          request,
+          response,
+          advisorId,
+          requestId,
+        );
       return res;
     } catch (error) {
       throw error;

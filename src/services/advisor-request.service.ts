@@ -154,6 +154,12 @@ export class AdvisorRequestService {
       );
     }
 
+    if (newStatusId == 3 && oldRequest.codeptorDocumentsSource == null) {
+      throw new HttpErrors[400](
+        `No puede cambiar el estado a estudio con codeudor si no existe un formato para los documentos de codeudor cargado`,
+      );
+    }
+
     if (newStatusId == 7 && oldRequest.contractSource == null) {
       throw new HttpErrors[400](
         `No puede cambiar el estado a pendiente por contrato si no existe un contrato cargado`,
@@ -263,7 +269,7 @@ export class AdvisorRequestService {
       if (newStatusId == 7) {
         contentEmail = `${contentEmail} Hemos subido el contrato,
         por favor ingrese a akinmueble.com, inicie sesión, descargue el contrato
-         y diligencielo correctamente para finalizar el proceso. Cualquier duda contacte con su asesor`;
+        y diligencielo correctamente para finalizar el proceso. Cualquier duda contacte con su asesor`;
       }
 
       if (newStatusId == 12) {
@@ -314,7 +320,7 @@ export class AdvisorRequestService {
   ): Promise<object | false> {
     const filePath = path.join(
       __dirname,
-      generalConfiguration.requestContractsFolder,
+      generalConfiguration.requestDocumentsFolder,
     );
 
     const advisorRequest = await this.requestRepository.findOne({
@@ -327,15 +333,55 @@ export class AdvisorRequestService {
 
     let res = await this.fileManagerServcie.StoreFileToPath(
       filePath,
-      generalConfiguration.requestContractPath,
+      generalConfiguration.requestDocumentPath,
       request,
       response,
-      generalConfiguration.contractExtensions,
+      generalConfiguration.documentsExtensions,
     );
     if (res) {
       const filename = response.req?.file?.filename;
       if (filename) {
         advisorRequest.contractSource = filename;
+
+        this.requestRepository.update(advisorRequest, {
+          where: {advisorId: advisorId},
+        });
+
+        return {file: filename};
+      }
+    }
+    return res;
+  }
+  public async uploadDocumentsCodeptorByAdvisor(
+    request: Request,
+    response: Response,
+    advisorId: number,
+    requestId: number,
+  ): Promise<object | false> {
+    const filePath = path.join(
+      __dirname,
+      generalConfiguration.requestDocumentsFolder,
+    );
+
+    const advisorRequest = await this.requestRepository.findOne({
+      where: {id: requestId, advisorId: advisorId},
+    });
+
+    if (!advisorRequest) {
+      throw new HttpErrors[400]('No se encontró la solicitud.');
+    }
+
+    let res = await this.fileManagerServcie.StoreFileToPath(
+      filePath,
+      generalConfiguration.requestDocumentPath,
+      request,
+      response,
+      generalConfiguration.documentsExtensions,
+    );
+    if (res) {
+      const filename = response.req?.file?.filename;
+      if (filename) {
+        advisorRequest.codeptorDocumentsSource = filename;
 
         this.requestRepository.update(advisorRequest, {
           where: {advisorId: advisorId},
