@@ -11,6 +11,7 @@ export namespace SecurityConfiguration {
   export const menus = {
     menuPropertyId: '642d9df302e1597baa66e444',
     menuRequestId: '642d9e0d02e1597baa66e445',
+    menuGlobalId: '645ed5284cd2a029c01c09e4',
   };
 
   export const actions = {
