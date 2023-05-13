@@ -63,6 +63,13 @@ export class RequestController {
     return this.requestRepository.count(where);
   }
 
+  @authenticate({
+    strategy: 'auth',
+    options: [
+      SecurityConfiguration.menus.menuRequestId,
+      SecurityConfiguration.actions.listAction,
+    ],
+  })
   @get('/requests')
   @response(200, {
     description: 'Array of Request model instances',
