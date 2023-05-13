@@ -110,6 +110,14 @@ export class PropertyController {
    * Se deja habilitado este enpoint ya que será necesario
    * para verlos detalles de una propiedad en lapágina web
    */
+
+  // @authenticate({
+  //   strategy: 'auth',
+  //   options: [
+  //     SecurityConfiguration.menus.menuPropertyId,
+  //     SecurityConfiguration.actions.listAction,
+  //   ],
+  // })
   @get('/properties/{id}')
   @response(200, {
     description: 'Property model instance',
