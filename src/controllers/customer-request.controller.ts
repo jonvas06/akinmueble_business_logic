@@ -146,7 +146,7 @@ export class CustomerRequestController {
       SecurityConfiguration.actions.uploadAction,
     ],
   })
-  @post('/customer/{customerId}/upload-contract/{requestId}', {
+  @post('/customer/{customerId}/upload-document/{requestId}', {
     responses: {
       200: {
         content: {
@@ -160,14 +160,14 @@ export class CustomerRequestController {
       },
     },
   })
-  async uploadContractByCustomer(
+  async uploadDocumentByCustomer(
     @param.path.number('customerId') customerId: number,
     @param.path.number('requestId') requestId: number,
     @inject(RestBindings.Http.RESPONSE) response: Response,
     @requestBody.file() request: Request,
   ): Promise<object | false> {
     try {
-      const res = await this.customerRequestService.uploadContractByCustomer(
+      const res = await this.customerRequestService.uploadDocumentByCustomer(
         request,
         response,
         customerId,
@@ -258,7 +258,10 @@ export class CustomerRequestController {
     @param.path.number('requestId') requestId: number,
   ): Promise<RequestModel> {
     try {
-      return await this.customerRequestService.cancelRequest(customerId, requestId);
+      return await this.customerRequestService.cancelRequest(
+        customerId,
+        requestId,
+      );
     } catch (e) {
       throw e;
     }
