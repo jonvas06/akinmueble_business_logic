@@ -186,9 +186,9 @@ export class CustomerRequestController {
       SecurityConfiguration.actions.downloadAction,
     ],
   })
-  @get('/customer/{customerId}/download-request-contract/{requestId}')
+  @get('/customer/{customerId}/download-document/{requestId}')
   @oas.response.file()
-  async downloadFileByCustomer(
+  async downloadDocumentByCustomer(
     @param.path.number('customerId') customerId: number,
     @param.path.string('requestId') requestId: number,
     @inject(RestBindings.Http.RESPONSE) response: ResponseRes,
@@ -201,15 +201,41 @@ export class CustomerRequestController {
           customerId,
         );
 
-      if (request.requestStatusId !== 7) {
-        throw new HttpErrors[400]('No se puede descargar el contrato');
+      if (!request) {
+        throw new HttpErrors[400]('No se encontró la solicitud');
       }
-      if (!request.contractSource) {
+
+      if (
+        request.requestStatusId !== 3 &&
+        request.requestStatusId !== 7 &&
+        request.requestStatusId !== 4 &&
+        request.requestStatusId !== 5 &&
+        request.requestStatusId !== 10 &&
+        request.requestStatusId !== 11
+      ) {
         throw new HttpErrors[400](
-          'No se encontró ningún contrato para descargar',
+          'No se puede descargar el documento solicitado',
         );
       }
-      const fileName = request.contractSource;
+
+      let fileName: string = '';
+
+      if (request.requestStatusId == 3) {
+        if (!request.codeptorDocumentsSource) {
+          throw new HttpErrors[400](
+            'No se encontró ningún documento para descargar',
+          );
+        }
+        fileName = request.codeptorDocumentsSource;
+      } else {
+        if (!request.contractSource) {
+          throw new HttpErrors[400](
+            'No se encontró ningún contrato para descargar',
+          );
+        }
+        fileName = request.contractSource;
+      }
+
       const file = this.fileManagerServcie.validateFileName(folder, fileName);
 
       response.download(file, fileName);
