@@ -7,7 +7,7 @@ import {HttpErrors, Request, Response} from '@loopback/rest';
 import path from 'path';
 import {generalConfiguration} from '../config/general.config';
 import {configurationNotification} from '../config/notification.config';
-import {Advisor, Property, Request as RequestModel} from '../models';
+import {Advisor, Customer, Property, Request as RequestModel} from '../models';
 import {
   AdvisorRepository,
   CustomerRepository,
@@ -230,10 +230,15 @@ export class CustomerRequestService {
         }
       });
     }
-    const newRequest = await this.customerRepository
-      .requests(request.customerId)
-      .create(request);
+    // const newRequest = await this.customerRepository
+    //   .requests(request.customerId)
+    //   .create(request);
+
+    const customer = await this.customerRepository.findById(request.customerId);
+
+    const newRequest = await this.requestRepository.create(request);
     this.notifyAdvisorEmail(advisorProperty, property);
+    this.notifyCustomer(customer, property);
     return newRequest;
   }
 
@@ -252,6 +257,20 @@ export class CustomerRequestService {
           ? advisorProperty.secondName
           : '' + '' + advisorProperty.firtsLastName,
       contectEmail: `se ha hecho una solicitud a la propiedad con id ${property.id}.`,
+      subjectEmail: configurationNotification.subjectCustomerNotification,
+    };
+    this.notificationService.SendNotification(data, url);
+  }
+
+  private notifyCustomer(advisorProperty: Customer, property: Property) {
+    const url = configurationNotification.urlNotification2fa;
+    const data = {
+      destinationEmail: advisorProperty.email,
+      destinationName:
+        advisorProperty.firstName + ' ' + advisorProperty.secondName
+          ? advisorProperty.secondName
+          : '' + '' + advisorProperty.firstLastName,
+      contectEmail: `Se ha cargado el formato de codeudor a tu solicitud con id ${property.id}. Por favor descargalo, llenalo y cargalo de nuevo`,
       subjectEmail: configurationNotification.subjectCustomerNotification,
     };
     this.notificationService.SendNotification(data, url);
