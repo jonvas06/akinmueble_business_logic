@@ -84,12 +84,24 @@ export class RequestController {
   })
   async find(
     // @param.filter(Request) filter?: Filter<Request>,
-    @param.query.number('requestStatus') requestStatus: number,
-    @param.query.number('propertyType') propertyType: number,
+    @param.query.number('requestStatus') requestStatus?: number,
+    @param.query.number('propertyType') propertyType?: number,
   ): Promise<CustomResponse> {
     try {
       const response = new CustomResponse();
-      const data = await this.requestService.findByRequestStatusAndPropertyType(
+      let data = null;
+
+      if (!requestStatus || !propertyType) {
+        data = await this.requestRepository.find({});
+        response.ok = true;
+        response.message =
+          'Todas ala solicitudfes han sido obtenidas con éxito';
+        response.data = data;
+
+        return response;
+      }
+
+      data = await this.requestService.findByRequestStatusAndPropertyType(
         requestStatus,
         propertyType,
       );
@@ -99,7 +111,7 @@ export class RequestController {
       }
 
       response.ok = true;
-      response.message = '';
+      response.message = 'Solicitudes filtradas han sido obtenidas con éxito';
       response.data = data;
 
       return response;
@@ -107,7 +119,6 @@ export class RequestController {
       console.log(error);
       throw error;
     }
-    // return this.requestRepository.find(filter);
   }
 
   // @authenticate({
@@ -117,7 +128,7 @@ export class RequestController {
   //     SecurityConfiguration.actions.listAction,
   //   ],
   // })
-  // @get('/requests')
+  // @get('/allRequests')
   // @response(200, {
   //   description: 'Array of Request model instances',
   //   content: {
@@ -129,7 +140,7 @@ export class RequestController {
   //     },
   //   },
   // })
-  // async find(
+  // async getAllRequests(
   //   @param.filter(Request) filter?: Filter<Request>,
   // ): Promise<Request[]> {
   //   return this.requestRepository.find(filter);
