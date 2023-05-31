@@ -94,4 +94,41 @@ export class RequestService {
 
     return response;
   }
+
+  async findByRequestStatusAndPropertyType(
+    requestStatus: number,
+    propertyType: number,
+  ): Promise<any> {
+    const count = await this.requestRepository.count();
+
+    let requestsFiltered: any[] = (await this.requestRepository.execute(
+      `
+    SELECT
+      request.id as requestId,
+      requestStatus.id as requestStatusId, requestStatus.statusName as requestStatusName,
+      propertyType.id as propertytypeId, propertyType.typeName as propertyTypeName
+
+    FROM  request
+	    INNER JOIN requestStatus ON request.requestStatusId = requestStatus.id
+      INNER JOIN property ON request.propertyId = property.id
+      INNER JOIN propertyType ON property.propertyTypeId = propertyType.id
+
+      WHERE request.requestStatusId = ${requestStatus}
+      AND
+      propertyType.id= ${propertyType};
+
+
+      `,
+    )) as any[];
+
+    const countRequestsFiltered = requestsFiltered.length;
+
+    const data = {
+      totalCount: count.count,
+      requests: requestsFiltered,
+      countRequestsFiltered: countRequestsFiltered,
+    };
+
+    return data;
+  }
 }
