@@ -19,3 +19,4 @@ export * from './request-type.model';
 export * from './request.model';
 export * from './response-user-ms.model';
 
+export * from './customer-request-reposrt.model';
