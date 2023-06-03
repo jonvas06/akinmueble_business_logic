@@ -1,3 +1,4 @@
+import {authenticate} from '@loopback/authentication';
 import {service} from '@loopback/core';
 import {
   Count,
@@ -19,7 +20,9 @@ import {
   requestBody,
   response,
 } from '@loopback/rest';
+import {SecurityConfiguration} from '../config/security.config';
 import {Customer, CustomerRegister, ResponseUserMs} from '../models';
+import {CustomResponse} from '../models/custom-reponse.model';
 import {CustomerRepository} from '../repositories';
 import {CustomerService} from '../services';
 
@@ -86,7 +89,64 @@ export class CustomerController {
     return this.customerRepository.count(where);
   }
 
+  /**
+   * Filtrar clientest que han hecho solicitudes tanto por compra como por alquiler.
+   * Filtrar clientes que han hecho solicitudes por alquiler.
+   * Filtrar clientes que han hecho solicitudes por compra
+   */
+  @authenticate({
+    strategy: 'auth',
+    options: [
+      SecurityConfiguration.menus.menuRequestId,
+      SecurityConfiguration.actions.listAction,
+    ],
+  })
   @get('/customers')
+  @response(200, {
+    description: 'Array of Customer model instances',
+    content: {
+      'application/json': {
+        schema: {
+          type: 'array',
+          items: getModelSchemaRef(CustomResponse),
+        },
+      },
+    },
+  })
+  async reportRequestsByCustomer(
+    @param.query.number('requestType') requestType?: number,
+  ): Promise<CustomResponse> {
+    try {
+      const response = new CustomResponse();
+      const data = await this.customerService.reportRequestsByCustomer(
+        requestType,
+      );
+
+      if (!data) {
+        response.ok = false;
+        response.message = 'No fue posible obtener la información solicitada';
+        response.data = data;
+        return response;
+      }
+
+      response.ok = true;
+      response.message = 'Información obtenida con éxito';
+      response.data = data;
+      return response;
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  }
+
+  @authenticate({
+    strategy: 'auth',
+    options: [
+      SecurityConfiguration.menus.menuRequestId,
+      SecurityConfiguration.actions.listAction,
+    ],
+  })
+  @get('/allCustomers')
   @response(200, {
     description: 'Array of Customer model instances',
     content: {

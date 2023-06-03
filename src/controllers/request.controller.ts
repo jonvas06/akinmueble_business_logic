@@ -3,7 +3,6 @@ import {service} from '@loopback/core';
 import {
   Count,
   CountSchema,
-  Filter,
   FilterExcludingWhere,
   repository,
   Where,
@@ -12,6 +11,7 @@ import {
   del,
   get,
   getModelSchemaRef,
+  HttpErrors,
   param,
   patch,
   post,
@@ -77,16 +77,74 @@ export class RequestController {
       'application/json': {
         schema: {
           type: 'array',
-          items: getModelSchemaRef(Request, {includeRelations: true}),
+          items: getModelSchemaRef(CustomResponse),
         },
       },
     },
   })
   async find(
-    @param.filter(Request) filter?: Filter<Request>,
-  ): Promise<Request[]> {
-    return this.requestRepository.find(filter);
+    // @param.filter(Request) filter?: Filter<Request>,
+    @param.query.number('requestStatus') requestStatus?: number,
+    @param.query.number('propertyType') propertyType?: number,
+  ): Promise<CustomResponse> {
+    try {
+      const response = new CustomResponse();
+      let data = null;
+
+      if (!requestStatus || !propertyType) {
+        data = await this.requestRepository.find({});
+        response.ok = true;
+        response.message =
+          'Todas ala solicitudfes han sido obtenidas con éxito';
+        response.data = data;
+
+        return response;
+      }
+
+      data = await this.requestService.findByRequestStatusAndPropertyType(
+        requestStatus,
+        propertyType,
+      );
+
+      if (!data) {
+        throw new HttpErrors[400]('');
+      }
+
+      response.ok = true;
+      response.message = 'Solicitudes filtradas han sido obtenidas con éxito';
+      response.data = data;
+
+      return response;
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
   }
+
+  // @authenticate({
+  //   strategy: 'auth',
+  //   options: [
+  //     SecurityConfiguration.menus.menuRequestId,
+  //     SecurityConfiguration.actions.listAction,
+  //   ],
+  // })
+  // @get('/allRequests')
+  // @response(200, {
+  //   description: 'Array of Request model instances',
+  //   content: {
+  //     'application/json': {
+  //       schema: {
+  //         type: 'array',
+  //         items: getModelSchemaRef(Request, {includeRelations: true}),
+  //       },
+  //     },
+  //   },
+  // })
+  // async getAllRequests(
+  //   @param.filter(Request) filter?: Filter<Request>,
+  // ): Promise<Request[]> {
+  //   return this.requestRepository.find(filter);
+  // }
 
   @patch('/requests')
   @response(200, {
