@@ -122,7 +122,15 @@ export class CustomerController {
         requestType,
       );
 
-      response.message = '';
+      if (!data) {
+        response.ok = false;
+        response.message = 'No fue posible obtener la información solicitada';
+        response.data = data;
+        return response;
+      }
+
+      response.ok = true;
+      response.message = 'Información obtenida con éxito';
       response.data = data;
       return response;
     } catch (error) {
