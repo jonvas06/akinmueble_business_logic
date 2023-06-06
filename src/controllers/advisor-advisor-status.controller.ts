@@ -33,7 +33,7 @@ export class AdvisorAdvisorStatusController {
 
   @patch('/advisor/{advisorId}/adisor_status/{statusId}')
   @response(204, {
-    description: 'advisorStatus PATCH success',
+    description: 'advisorStatus PATCH successss',
   })
   async changeAdvisorStatus(
     @param.path.number('advisorId') advisorId: number,
