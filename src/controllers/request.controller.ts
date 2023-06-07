@@ -121,30 +121,62 @@ export class RequestController {
     }
   }
 
-  // @authenticate({
-  //   strategy: 'auth',
-  //   options: [
-  //     SecurityConfiguration.menus.menuRequestId,
-  //     SecurityConfiguration.actions.listAction,
-  //   ],
-  // })
-  // @get('/allRequests')
-  // @response(200, {
-  //   description: 'Array of Request model instances',
-  //   content: {
-  //     'application/json': {
-  //       schema: {
-  //         type: 'array',
-  //         items: getModelSchemaRef(Request, {includeRelations: true}),
-  //       },
-  //     },
-  //   },
-  // })
-  // async getAllRequests(
-  //   @param.filter(Request) filter?: Filter<Request>,
-  // ): Promise<Request[]> {
-  //   return this.requestRepository.find(filter);
-  // }
+  @authenticate({
+    strategy: 'auth',
+    options: [
+      SecurityConfiguration.menus.menuRequestId,
+      SecurityConfiguration.actions.listAction,
+    ],
+  })
+  @get('/requestsByRequestTypePropertyTypeDepartmentCity')
+  @response(200, {
+    description: 'Array of Request model instances',
+    content: {
+      'application/json': {
+        schema: {
+          type: 'array',
+          items: getModelSchemaRef(CustomResponse),
+        },
+      },
+    },
+  })
+  async requestsByRequestTypePropertyTypeDepartmentCity(
+    @param.query.number('requestType') requestType: number,
+    @param.query.number('propertyType') propertyType: number,
+    @param.query.number('department') department: number,
+    @param.query.number('city') city?: number,
+  ): Promise<CustomResponse> {
+    try {
+      const response = new CustomResponse();
+
+      const requestsFiltered =
+        await this.requestService.requestsByRequestTypePropertyTypeDepartmentCity(
+          requestType,
+          propertyType,
+          department,
+          city,
+        );
+
+      if (!requestsFiltered) {
+        response.ok = false;
+        response.message = 'No se obtuvo la información';
+        return response;
+      }
+
+      response.ok = true;
+      response.message = 'Información obtenida correctamente';
+      response.data = requestsFiltered;
+
+      return response;
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  }
+  // requestType: number,
+  // propertyType: number,
+  // department: number,
+  // city?: number,
 
   @patch('/requests')
   @response(200, {
