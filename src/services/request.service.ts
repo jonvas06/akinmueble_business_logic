@@ -131,4 +131,39 @@ export class RequestService {
 
     return data;
   }
+
+  async requestsByRequestTypePropertyTypeDepartmentCity(
+    requestType: number,
+    propertyType: number,
+    department: number,
+    city?: number,
+  ): Promise<any[]> {
+    let cityWhere = '';
+
+    if (city) {
+      cityWhere = `AND
+      city.id = ${city} `;
+    }
+
+    const requestsFiltered = (await this.requestRepository.execute(`
+      SELECT request.id as code, city.cityName as city,
+      department.departmentName as department,
+      property.address, requestType.requestTypeName,
+      requestStatus.statusName as requestStatus,
+      request.contractSource
+      FROM request
+      JOIN requestType ON request.requestTypeId = requestType.id
+      JOIN property ON request.propertyId = property.id
+      JOIN propertyType ON property.propertyTypeId = propertyType .id
+      JOIN city ON property.cityId = city.id
+      JOIN department ON city.departmentId = department.id
+      JOIN requestStatus ON request.requestStatusId = requestStatus.id
+      WHERE requestType.id = ${requestType} AND
+      propertyType.id = ${propertyType} AND
+      department.id = ${department}
+      ${cityWhere}
+    `)) as any[];
+
+    return requestsFiltered;
+  }
 }
