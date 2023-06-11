@@ -42,14 +42,6 @@ export class FileManagerController {
   }
 
   /** Download files */
-
-  @authenticate({
-    strategy: 'auth',
-    options: [
-      SecurityConfiguration.menus.menuRequestId,
-      SecurityConfiguration.actions.downloadAction,
-    ],
-  })
   @get('/downloadFile/{type}/{name}')
   @oas.response.file()
   async downloadFileByName(
