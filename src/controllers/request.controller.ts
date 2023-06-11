@@ -3,6 +3,7 @@ import {service} from '@loopback/core';
 import {
   Count,
   CountSchema,
+  Filter,
   FilterExcludingWhere,
   repository,
   Where,
@@ -83,7 +84,7 @@ export class RequestController {
     },
   })
   async find(
-    // @param.filter(Request) filter?: Filter<Request>,
+    @param.filter(Request) filter?: Filter<Request>,
     @param.query.number('requestStatus') requestStatus?: number,
     @param.query.number('propertyType') propertyType?: number,
   ): Promise<CustomResponse> {
@@ -119,6 +120,31 @@ export class RequestController {
       console.log(error);
       throw error;
     }
+  }
+
+  @authenticate({
+    strategy: 'auth',
+    options: [
+      SecurityConfiguration.menus.menuRequestId,
+      SecurityConfiguration.actions.listAction,
+    ],
+  })
+  @get('/requests_with_filter')
+  @response(200, {
+    description: 'Array of Request model instances',
+    content: {
+      'application/json': {
+        schema: {
+          type: 'array',
+          items: getModelSchemaRef(Request, {includeRelations: true}),
+        },
+      },
+    },
+  })
+  async getPropertiesWithFilter(
+    @param.filter(Request) filter?: Filter<Request>,
+  ): Promise<Request[]> {
+    return this.requestRepository.find(filter);
   }
 
   @authenticate({
