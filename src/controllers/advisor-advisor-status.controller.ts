@@ -31,7 +31,7 @@ export class AdvisorAdvisorStatusController {
     return this.advisorRepository.advisorStatus(id);
   }
 
-  @patch('/advisor/{advisorId}/adisor_status/{statusId}')
+  @patch('/advisor/{advisorId}/advisor_status/{statusId}')
   @response(204, {
     description: 'advisorStatus PATCH success',
   })
