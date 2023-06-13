@@ -238,7 +238,7 @@ export class CustomerRequestService {
 
     const newRequest = await this.requestRepository.create(request);
     this.notifyAdvisorEmail(advisorProperty, property);
-    this.notifyCustomer(customer, property);
+    this.notifyCustomerNewRequest(customer, property);
     return newRequest;
   }
 
@@ -256,11 +256,26 @@ export class CustomerRequestService {
         advisorProperty.firstName + ' ' + advisorProperty.secondName
           ? advisorProperty.secondName
           : '' + '' + advisorProperty.firtsLastName,
-      contectEmail: `se ha hecho una solicitud a la propiedad con id ${property.id}.`,
+      contectEmail: `se ha hecho una solicitud a la propiedad con id: ${property.id}.`,
       subjectEmail: configurationNotification.subjectCustomerNotification,
     };
     this.notificationService.SendNotification(data, url);
   }
+
+  private notifyCustomerNewRequest(advisorProperty: Customer, property: Property) {
+    const url = configurationNotification.urlNotification2fa;
+    const data = {
+      destinationEmail: advisorProperty.email,
+      destinationName:
+        advisorProperty.firstName + ' ' + advisorProperty.secondName
+          ? advisorProperty.secondName
+          : '' + '' + advisorProperty.firstLastName,
+      contectEmail: `Se ha hecho con exito la solicitud a la propiedad con id: ${property.id}.`,
+      subjectEmail: configurationNotification.subjectCustomerNotification,
+    };
+    this.notificationService.SendNotification(data, url);
+  }
+
 
   private notifyCustomer(advisorProperty: Customer, property: Property) {
     const url = configurationNotification.urlNotification2fa;
