@@ -213,7 +213,7 @@ export class AdvisorRequestService {
       );
 
       if (newStatusId == 4) {
-        if (!report) {
+        if (!report || (report && report.commentary == '')) {
           throw new HttpErrors[400](
             'Es necesario que hagas un comentario acerca del cambio del estado de la solicitud para que el cliente pueda revisarlo en los reportes',
           );
@@ -240,7 +240,7 @@ export class AdvisorRequestService {
       }
 
       if (newStatusId == 5) {
-        if (!report) {
+        if (!report || (report && report.commentary == '')) {
           throw new HttpErrors[400](
             'Es necesario que hagas un comentario acerca del cambio del estado de la solicitud para que el cliente pueda revisarlo en los reportes',
           );
@@ -273,7 +273,7 @@ export class AdvisorRequestService {
       }
 
       if (newStatusId == 12) {
-        if (!report) {
+        if (!report || (report && report.commentary == '')) {
           throw new HttpErrors[400](
             'Es necesario que hagas un comentario acerca del cambio del estado de la solicitud para que el cliente pueda revisarlo en los reportes',
           );
@@ -286,7 +286,7 @@ export class AdvisorRequestService {
     }
 
     if (newStatusId == 8 || newStatusId == 9) {
-      if (!report) {
+      if (!report || (report && report.commentary == '')) {
         throw new HttpErrors[400](
           'Es necesario que hagas un comentario acerca del cambio del estado de la solicitud para que el cliente pueda revisarlo en los reportes',
         );
