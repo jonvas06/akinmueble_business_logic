@@ -1,7 +1,13 @@
 /* eslint-disable no-useless-catch */
 import {authenticate} from '@loopback/authentication';
 import {inject, service} from '@loopback/core';
-import {Count, CountSchema, Where, repository} from '@loopback/repository';
+import {
+  Count,
+  CountSchema,
+  Filter,
+  Where,
+  repository,
+} from '@loopback/repository';
 
 import {
   HttpErrors,
@@ -61,6 +67,36 @@ export class CustomerRequestController {
   ): Promise<RequestModel[]> {
     try {
       return await this.customerRequestService.getRequestsByCustomer(id);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @authenticate({
+    strategy: 'auth',
+    options: [
+      SecurityConfiguration.menus.menuRequestId,
+      SecurityConfiguration.actions.listAction,
+    ],
+  })
+  @get('/customers/{id}/requests_with_filter', {
+    responses: {
+      '200': {
+        description: 'Array of Customer has many Request',
+        content: {
+          'application/json': {
+            schema: {type: 'array', items: getModelSchemaRef(RequestModel)},
+          },
+        },
+      },
+    },
+  })
+  async findWithFilter(
+    @param.path.number('id') id: number,
+    @param.query.object('filter') filter?: Filter<RequestModel>,
+  ): Promise<RequestModel[]> {
+    try {
+      return await this.customerRepository.requests(id).find(filter);
     } catch (error) {
       throw error;
     }
