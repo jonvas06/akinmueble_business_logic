@@ -1,12 +1,17 @@
+import {service} from '@loopback/core';
 import {Filter, FilterExcludingWhere, repository} from '@loopback/repository';
 import {get, getModelSchemaRef, param, response} from '@loopback/rest';
 import {Property} from '../models';
+import {CustomResponse} from '../models/custom-reponse.model';
 import {PropertyRepository} from '../repositories';
+import {PropertyService} from '../services/property.service';
 
 export class PropertyController {
   constructor(
     @repository(PropertyRepository)
     public propertyRepository: PropertyRepository,
+    @service(PropertyService)
+    protected propertyService: PropertyService,
   ) {}
 
   // @authenticate({
@@ -61,6 +66,42 @@ export class PropertyController {
    *
    * Posiblemente mas adelante tambien la necesite administrador
    */
+  @get('/propertiesWithStatus')
+  @response(200, {
+    description: 'Array of Property model instances',
+    content: {
+      'application/json': {
+        schema: {
+          type: 'array',
+          items: getModelSchemaRef(Property, {includeRelations: true}),
+        },
+      },
+    },
+  })
+  async findPropertiesByStatus(
+    @param.query.number('status') status?: number,
+  ): Promise<CustomResponse> {
+    try {
+      const response = new CustomResponse();
+      const data = await this.propertyService.findPropertiesByStatus(status);
+
+      if (!data) {
+        response.ok = false;
+        response.message = 'No fue posible obtener la información solicitada';
+        response.data = data;
+        return response;
+      }
+
+      response.ok = true;
+      response.message = 'Información obtenida con éxito';
+      response.data = data;
+      return response;
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  }
+
   @get('/properties')
   @response(200, {
     description: 'Array of Property model instances',
@@ -110,6 +151,14 @@ export class PropertyController {
    * Se deja habilitado este enpoint ya que será necesario
    * para verlos detalles de una propiedad en lapágina web
    */
+
+  // @authenticate({
+  //   strategy: 'auth',
+  //   options: [
+  //     SecurityConfiguration.menus.menuPropertyId,
+  //     SecurityConfiguration.actions.listAction,
+  //   ],
+  // })
   @get('/properties/{id}')
   @response(200, {
     description: 'Property model instance',

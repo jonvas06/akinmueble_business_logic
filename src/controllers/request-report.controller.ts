@@ -15,16 +15,14 @@ import {
   post,
   requestBody,
 } from '@loopback/rest';
-import {
-  Request,
-  Report,
-} from '../models';
+import {Report, Request} from '../models';
 import {RequestRepository} from '../repositories';
 
 export class RequestReportController {
   constructor(
-    @repository(RequestRepository) protected requestRepository: RequestRepository,
-  ) { }
+    @repository(RequestRepository)
+    protected requestRepository: RequestRepository,
+  ) {}
 
   @get('/requests/{id}/reports', {
     responses: {
@@ -42,7 +40,11 @@ export class RequestReportController {
     @param.path.number('id') id: number,
     @param.query.object('filter') filter?: Filter<Report>,
   ): Promise<Report[]> {
-    return this.requestRepository.reports(id).find(filter);
+    try {
+      return this.requestRepository.reports(id).find(filter);
+    } catch (error) {
+      throw error;
+    }
   }
 
   @post('/requests/{id}/reports', {
@@ -61,11 +63,12 @@ export class RequestReportController {
           schema: getModelSchemaRef(Report, {
             title: 'NewReportInRequest',
             exclude: ['id'],
-            optional: ['requestId']
+            optional: ['requestId'],
           }),
         },
       },
-    }) report: Omit<Report, 'id'>,
+    })
+    report: Omit<Report, 'id'>,
   ): Promise<Report> {
     return this.requestRepository.reports(id).create(report);
   }
@@ -88,7 +91,8 @@ export class RequestReportController {
       },
     })
     report: Partial<Report>,
-    @param.query.object('where', getWhereSchemaFor(Report)) where?: Where<Report>,
+    @param.query.object('where', getWhereSchemaFor(Report))
+    where?: Where<Report>,
   ): Promise<Count> {
     return this.requestRepository.reports(id).patch(report, where);
   }
@@ -103,7 +107,8 @@ export class RequestReportController {
   })
   async delete(
     @param.path.number('id') id: number,
-    @param.query.object('where', getWhereSchemaFor(Report)) where?: Where<Report>,
+    @param.query.object('where', getWhereSchemaFor(Report))
+    where?: Where<Report>,
   ): Promise<Count> {
     return this.requestRepository.reports(id).delete(where);
   }

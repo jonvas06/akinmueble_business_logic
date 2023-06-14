@@ -1,3 +1,5 @@
+import {authenticate} from '@loopback/authentication';
+import {service} from '@loopback/core';
 import {
   Count,
   CountSchema,
@@ -7,23 +9,29 @@ import {
   Where,
 } from '@loopback/repository';
 import {
-  post,
-  param,
+  del,
   get,
   getModelSchemaRef,
+  HttpErrors,
+  param,
   patch,
+  post,
   put,
-  del,
   requestBody,
   response,
 } from '@loopback/rest';
+import {SecurityConfiguration} from '../config/security.config';
 import {Request} from '../models';
+import {CustomResponse} from '../models/custom-reponse.model';
 import {RequestRepository} from '../repositories';
+import {RequestService} from '../services/request.service';
 
 export class RequestController {
   constructor(
     @repository(RequestRepository)
-    public requestRepository : RequestRepository,
+    public requestRepository: RequestRepository,
+    @service(RequestService)
+    protected requestService: RequestService,
   ) {}
 
   @post('/requests')
@@ -52,13 +60,76 @@ export class RequestController {
     description: 'Request model count',
     content: {'application/json': {schema: CountSchema}},
   })
-  async count(
-    @param.where(Request) where?: Where<Request>,
-  ): Promise<Count> {
+  async count(@param.where(Request) where?: Where<Request>): Promise<Count> {
     return this.requestRepository.count(where);
   }
 
+  @authenticate({
+    strategy: 'auth',
+    options: [
+      SecurityConfiguration.menus.menuRequestId,
+      SecurityConfiguration.actions.listAction,
+    ],
+  })
   @get('/requests')
+  @response(200, {
+    description: 'Array of Request model instances',
+    content: {
+      'application/json': {
+        schema: {
+          type: 'array',
+          items: getModelSchemaRef(CustomResponse),
+        },
+      },
+    },
+  })
+  async find(
+    @param.filter(Request) filter?: Filter<Request>,
+    @param.query.number('requestStatus') requestStatus?: number,
+    @param.query.number('propertyType') propertyType?: number,
+  ): Promise<CustomResponse> {
+    try {
+      const response = new CustomResponse();
+      let data = null;
+
+      if (!requestStatus || !propertyType) {
+        data = await this.requestRepository.find({});
+        response.ok = true;
+        response.message =
+          'Todas ala solicitudfes han sido obtenidas con éxito';
+        response.data = data;
+
+        return response;
+      }
+
+      data = await this.requestService.findByRequestStatusAndPropertyType(
+        requestStatus,
+        propertyType,
+      );
+
+      if (!data) {
+        throw new HttpErrors[400]('');
+      }
+
+      response.ok = true;
+      response.message = 'Solicitudes filtradas han sido obtenidas con éxito';
+      response.data = data;
+
+      return response;
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  }
+
+  @authenticate({
+    strategy: 'auth',
+    options: [
+      SecurityConfiguration.menus.menuRequestId,
+      SecurityConfiguration.actions.listAction,
+    ],
+  })
+  @get('/requests_with_filter')
   @response(200, {
     description: 'Array of Request model instances',
     content: {
@@ -70,11 +141,68 @@ export class RequestController {
       },
     },
   })
-  async find(
+  async getPropertiesWithFilter(
     @param.filter(Request) filter?: Filter<Request>,
   ): Promise<Request[]> {
     return this.requestRepository.find(filter);
   }
+
+  @authenticate({
+    strategy: 'auth',
+    options: [
+      SecurityConfiguration.menus.menuRequestId,
+      SecurityConfiguration.actions.listAction,
+    ],
+  })
+  @get('/requestsByRequestTypePropertyTypeDepartmentCity')
+  @response(200, {
+    description: 'Array of Request model instances',
+    content: {
+      'application/json': {
+        schema: {
+          type: 'array',
+          items: getModelSchemaRef(CustomResponse),
+        },
+      },
+    },
+  })
+  async requestsByRequestTypePropertyTypeDepartmentCity(
+    @param.query.number('requestType') requestType: number,
+    @param.query.number('propertyType') propertyType: number,
+    @param.query.number('department') department: number,
+    @param.query.number('city') city?: number,
+  ): Promise<CustomResponse> {
+    try {
+      const response = new CustomResponse();
+
+      const requestsFiltered =
+        await this.requestService.requestsByRequestTypePropertyTypeDepartmentCity(
+          requestType,
+          propertyType,
+          department,
+          city,
+        );
+
+      if (!requestsFiltered) {
+        response.ok = false;
+        response.message = 'No se obtuvo la información';
+        return response;
+      }
+
+      response.ok = true;
+      response.message = 'Información obtenida correctamente';
+      response.data = requestsFiltered;
+
+      return response;
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  }
+  // requestType: number,
+  // propertyType: number,
+  // department: number,
+  // city?: number,
 
   @patch('/requests')
   @response(200, {
@@ -106,7 +234,8 @@ export class RequestController {
   })
   async findById(
     @param.path.number('id') id: number,
-    @param.filter(Request, {exclude: 'where'}) filter?: FilterExcludingWhere<Request>
+    @param.filter(Request, {exclude: 'where'})
+    filter?: FilterExcludingWhere<Request>,
   ): Promise<Request> {
     return this.requestRepository.findById(id, filter);
   }
@@ -127,6 +256,29 @@ export class RequestController {
     request: Request,
   ): Promise<void> {
     await this.requestRepository.updateById(id, request);
+  }
+
+  @authenticate({
+    strategy: 'auth',
+    options: [
+      SecurityConfiguration.menus.menuRequestId,
+      SecurityConfiguration.actions.assignAction,
+    ],
+  })
+  @patch('/requests/{requestId}/{newAdvisorIid}')
+  @response(204, {
+    description: 'Request PATCH success',
+  })
+  async ChangeAdvisor(
+    @param.path.number('requestId') requestId: number,
+    @param.path.number('newAdvisorIid') newAdvisorId: number,
+  ): Promise<CustomResponse> {
+    try {
+      return this.requestService.changeAdvisor(requestId, newAdvisorId);
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
   }
 
   @put('/requests/{id}')

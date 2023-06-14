@@ -3,7 +3,9 @@ import {repository} from '@loopback/repository';
 import {Response, RestBindings, get, oas, param} from '@loopback/rest';
 import {promisify} from 'util';
 
+import {authenticate} from '@loopback/authentication';
 import fs from 'fs';
+import {SecurityConfiguration} from '../config/security.config';
 import {PropertyRepository} from '../repositories';
 import {FileManagerService} from '../services/fileManager.service';
 const readdir = promisify(fs.readdir);
@@ -40,7 +42,6 @@ export class FileManagerController {
   }
 
   /** Download files */
-
   @get('/downloadFile/{type}/{name}')
   @oas.response.file()
   async downloadFileByName(
